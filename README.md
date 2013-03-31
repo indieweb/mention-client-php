@@ -1,7 +1,7 @@
 Webmention Client
 =================
 
-Client library for sending webmention and pingback notifications.
+Client library for sending [webmention](http://webmention.org) and [pingback](http://indiewebcamp.com/pingback) notifications.
 
 Usage
 -----
