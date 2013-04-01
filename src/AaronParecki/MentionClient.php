@@ -1,4 +1,6 @@
 <?php
+namespace AaronParecki;
+
 class MentionClient {
 
   public $debug = false;
@@ -221,5 +223,4 @@ class MentionClient {
 
     return $this->{$key}[$url];
   }
-
 }

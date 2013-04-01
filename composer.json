@@ -1,0 +1,20 @@
+{
+    "name": "aaronparecki/mention-client",
+    "description": "Client library for sending webmention and pingback notifications",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Aaron Parecki",
+            "email": "aaron@parecki.com"
+        }
+    ],
+    "autoload": {
+	    "psr-0": {
+	        "AaronParecki": "src/"
+	    }
+    },
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.3"
+    }
+}
