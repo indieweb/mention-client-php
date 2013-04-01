@@ -8,7 +8,7 @@ Usage
 
 ```php
 <?php
-$client = new MentionClient($url);
+$client = new AaronParecki\MentionClient($url);
 $client->debug = true;
 $sent = $client->sendSupportedMentions();
 
