@@ -138,7 +138,7 @@ class MentionClient {
       ));
 
       $response = $this->_post($webmentionServer, $payload, array(
-        'Content-type: application/x-www-url-form-encoded',
+        'Content-type: application/x-www-form-urlencoded',
         'Accept: application/json'
       ));
       $this->_debug($response);
