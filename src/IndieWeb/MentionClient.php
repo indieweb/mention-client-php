@@ -1,4 +1,6 @@
 <?php
+namespace IndieWeb;
+
 class MentionClient {
 
   public $debug = false;

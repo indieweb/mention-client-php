@@ -1,0 +1,23 @@
+{
+  "name": "indieweb/mention-client",
+  "description": "Client library for sending webmention and pingback notifications",
+  "version": "0.2.0",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/indieweb/mention-client",
+  "authors": [
+    {
+      "name": "Aaron Parecki",
+      "email": "aaron@parecki.com",
+      "homepage": "http://aaronparecki.com/"
+    }
+  ],
+  "autoload": {
+    "psr-0": {
+      "IndieWeb": "src/"
+    }
+  },
+  "minimum-stability": "dev",
+  "require": {
+    "php": ">=5.3"
+  }
+}

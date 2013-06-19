@@ -1,8 +1,9 @@
 <?php
-include('mention-client.php');
+// Note: if installing with composer you should require 'vendor/autoload.php' instead
+include('src/IndieWeb/MentionClient.php');
 
 $url = 'https://github.com/aaronpk/mention-client';
-$client = new MentionClient($url);
+$client = new IndieWeb\MentionClient($url);
 $client->debug = true;
 $sent = $client->sendSupportedMentions();
 

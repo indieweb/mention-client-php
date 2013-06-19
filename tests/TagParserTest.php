@@ -1,12 +1,12 @@
 <?php
-include('mention-client.php');
+include('src/IndieWeb/MentionClient.php');
 
 class TagParserTest extends PHPUnit_Framework_TestCase {
 
   public $client;
 
   public function setUp() {
-    $this->client = new MentionClient(false, 'empty');
+    $this->client = new IndieWeb\MentionClient(false, 'empty');
   }
 
   public function testFindWebmentionTagRelHref() {

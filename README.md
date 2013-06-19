@@ -1,14 +1,14 @@
 Webmention Client
 =================
 
-Client library for sending [webmention](http://webmention.org) and [pingback](http://indiewebcamp.com/pingback) notifications.
+Client library for sending [webmention](http://indiewebcamp.com/webmention) and [pingback](http://indiewebcamp.com/pingback) notifications.
 
 Usage
 -----
 
 ```php
 <?php
-$client = new MentionClient($url);
+$client = new IndieWeb\MentionClient($url);
 $client->debug = true;
 $sent = $client->sendSupportedMentions();
 
