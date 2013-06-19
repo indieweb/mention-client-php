@@ -60,6 +60,15 @@ class MentionClient {
     return $this->c('supportsPingback', $target);
   }
 
+  public function _findWebmentionEndpoint($body) {
+    if(preg_match('/<link[ ]+href="([^"]+)"[ ]+rel="http:\/\/webmention\.org\/"[ ]*\/?>/i', $body, $match)
+        || preg_match('/<link[ ]+rel="http:\/\/webmention\.org\/"[ ]+href="([^"]+)"[ ]*\/?>/i', $body, $match)) {
+      return $match[1];
+    } else {
+      return false;
+    }
+  }
+
   public function supportsWebmention($target) {
 
     if($this->c('supportsWebmention', $target) === null) {
@@ -80,8 +89,8 @@ class MentionClient {
         if(!$this->c('body', $target)) {
           $this->c('body', $target, $this->_fetchBody($target));
         }
-        if(preg_match('/<link href="([^"]+)" rel="http:\/\/webmention.org\/" ?\/?>/i', $this->c('body', $target), $match)) {
-          $this->c('webmentionServer', $target, $match[1]);
+        if($endpoint=$this->_findWebmentionEndpoint($this->c('body', $target))) {
+          $this->c('webmentionServer', $target, $endpoint);
           $this->c('supportsWebmention', $target, true);
         }
       }
