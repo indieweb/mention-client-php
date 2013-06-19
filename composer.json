@@ -1,7 +1,7 @@
 {
   "name": "indieweb/mention-client",
   "description": "Client library for sending webmention and pingback notifications",
-  "version": "0.2.0",
+  "type": "library",
   "license": "Apache-2.0",
   "homepage": "https://github.com/indieweb/mention-client",
   "authors": [
