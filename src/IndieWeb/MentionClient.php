@@ -168,14 +168,14 @@ class MentionClient {
 
     $sent = false;
 
-    // Try pingback first since it will be more common for now. Eventually will probably switch this.
-    if($this->supportsPingback($target)) {
-      $sent = $this->sendPingback($target);
+    // Look for a webmention endpoint first
+    if($this->supportsWebmention($target)) {
+      $sent = $this->sendWebmention($target);
     }
 
-    // Only send a webmention if we didn't find a pingback server
-    if($sent == false && $this->supportsWebmention($target)) {
-      $sent = $this->sendWebmention($target);
+    // Only look for a pingback server if we didn't find a webmention server
+    if($sent == false && $this->supportsPingback($target)) {
+      $sent = $this->sendPingback($target);
     }
 
     if($sent) 
