@@ -112,9 +112,9 @@ class MentionClient {
       
       $link_header = false;
       
-      if (array_key_exists('Link', $headers)) {
-        if (is_array($headers['Link'])) {
-          $link_header = implode($headers['Link'], ",");
+      if(array_key_exists('Link', $headers)) {
+        if(is_array($headers['Link'])) {
+          $link_header = implode($headers['Link'], ", ");
         } else {
           $link_header = $headers['Link'];
         }
@@ -233,7 +233,7 @@ class MentionClient {
     return curl_exec($ch);
   }
 
-  private function _parse_headers($headers) {
+  public function _parse_headers($headers) {
     $retVal = array();
     $fields = explode("\r\n", preg_replace('/\x0D\x0A[\x09\x20]+/', ' ', $headers));
     foreach($fields as $field) {
@@ -269,7 +269,7 @@ class MentionClient {
       return $response;
   }
 
-  private function c($type, $url, $val=null) {
+  public function c($type, $url, $val=null) {
     // Create the empty record if it doesn't yet exist
     $key = '_'.$type;
 

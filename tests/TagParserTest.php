@@ -1,5 +1,5 @@
 <?php
-include('src/IndieWeb/MentionClient.php');
+require_once('src/IndieWeb/MentionClient.php');
 
 class TagParserTest extends PHPUnit_Framework_TestCase {
 
