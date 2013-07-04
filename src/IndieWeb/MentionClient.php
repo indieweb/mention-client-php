@@ -3,7 +3,8 @@ namespace IndieWeb;
 
 class MentionClient {
 
-  public $debug = false;
+  private $_debugging = false;
+  private static $_debugStatic = false;
 
   private $_sourceURL;
   private $_sourceBody;
@@ -22,7 +23,7 @@ class MentionClient {
     if($sourceBody)
       $this->_sourceBody = $sourceBody;
     else
-      $this->_sourceBody = $this->_get($sourceURL);
+      $this->_sourceBody = self::_get($sourceURL);
 
     // Find all external links in the source
     preg_match_all("/<a[^>]+href=.(https?:\/\/[^'\"]+)/i", $this->_sourceBody, $matches);
@@ -62,21 +63,30 @@ class MentionClient {
     return $this->c('supportsPingback', $target);
   }
   
-  public function sendPingback($target) {
-    
-    $this->_debug("Sending pingback now!");
+  public static function sendPingback($endpoint, $source, $target) {    
+    $payload = xmlrpc_encode_request('pingback.ping', array($source,  $target));
+
+    $response = self::_post($endpoint, $payload, array(
+      'Content-type: application/xml'
+    ));
+
+    if(@$decoded=xmlrpc_decode($response)) {
+      if(is_string($decoded))
+        return true; // pingback returns a string like "Pingback was successful" when it works
+      else
+        return false; // otherwise returns an array like array('faultCode'=>48,'faultString'=>'The pingback has already been registered')
+    } else {
+      return false;
+    }
+  }
+
+  public function sendPingbackPayload($target) {
+    self::_debug_("Sending pingback now!");
 
     $pingbackServer = $this->c('pingbackServer', $target);
     $this->_debug("Sending to pingback server: " . $pingbackServer);
 
-    $payload = xmlrpc_encode_request('pingback.ping', array($this->_sourceURL,  $target));
-
-    $response = $this->_post($pingbackServer, $payload, array(
-      'Content-type: application/xml'
-    ));
-    $this->_debug($response);
-
-    return true;
+    return self::sendPingback($pingbackServer, $this->_sourceURL, $target);
   }
 
   public function _findWebmentionEndpoint($body) {
@@ -131,61 +141,76 @@ class MentionClient {
     return $this->c('supportsWebmention', $target);
   }
   
-  public function sendWebmention($target) {
+  public static function sendWebmention($endpoint, $source, $target) {
+    
+    $payload = http_build_query(array(
+      'source' => $source,
+      'target' => $target
+    ));
+
+    $response = self::_post($endpoint, $payload, array(
+      'Content-type: application/x-www-form-urlencoded',
+      'Accept: application/json'
+    ), true);
+
+    // Return true if the remote endpoint accepted it
+    return in_array($response, array(200,202));
+  }
+
+  public function sendWebmentionPayload($target) {
     
     $this->_debug("Sending webmention now!");
 
     $webmentionServer = $this->c('webmentionServer', $target);
     $this->_debug("Sending to webmention server: " . $webmentionServer);
 
-    $payload = http_build_query(array(
-      'source' => $this->_sourceURL,
-      'target' => $target
-    ));
-
-    $response = $this->_post($webmentionServer, $payload, array(
-      'Content-type: application/x-www-form-urlencoded',
-      'Accept: application/json'
-    ));
-    $this->_debug($response);
-
-    return true;
+    return self::sendWebmention($webmentionServer, $this->_sourceURL, $target);
   }
 
   public function sendSupportedMentions($target=false) {
 
     if($target == false) {
-      $totalSent = 0;
+      $totalAccepted = 0;
 
       foreach($this->_links as $link) {
         $this->_debug("Checking $link");
-        $totalSent += $this->sendSupportedMentions($link);
+        $totalAccepted += $this->sendSupportedMentions($link);
         $this->_debug('');
       }
 
-      return $totalSent;
+      return $totalAccepted;
     }
 
-    $sent = false;
+    $accepted = false;
 
     // Look for a webmention endpoint first
     if($this->supportsWebmention($target)) {
-      $sent = $this->sendWebmention($target);
-    }
-
+      $accepted = $this->sendWebmentionPayload($target);
     // Only look for a pingback server if we didn't find a webmention server
-    if($sent == false && $this->supportsPingback($target)) {
-      $sent = $this->sendPingback($target);
+    } else 
+    if($this->supportsPingback($target)) {
+      $accepted = $this->sendPingbackPayload($target);
     }
 
-    if($sent) 
+    if($accepted)
       return 1;
     else
       return 0;
   }
 
+  public function debug($enabled) {
+    $this->_debugging = $enabled;
+    self::enableDebug($enabled);
+  }
+  public static function enableDebug($enabled) {
+    self::$_debugStatic = $enabled;    
+  }
   private function _debug($msg) {
-    if($this->debug)
+    if($this->_debugging)
+      echo "\t" . $msg . "\n";
+  }
+  private static function _debug_($msg) {
+    if(self::$_debugStatic)
       echo "\t" . $msg . "\n";
   }
 
@@ -224,19 +249,24 @@ class MentionClient {
     return $retVal;
   }
 
-  private function _get($url) {
+  private static function _get($url) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     return curl_exec($ch);
   }
 
-  private function _post($url, $body, $headers=array()) {
+  private static function _post($url, $body, $headers=array(), $returnHTTPCode=false) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    return curl_exec($ch);
+    $response = curl_exec($ch);
+    self::_debug_($response);
+    if($returnHTTPCode)
+      return curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    else
+      return $response;
   }
 
   private function c($type, $url, $val=null) {

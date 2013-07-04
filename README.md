@@ -23,6 +23,20 @@ for supported servers, if none are found, then it searches the body of the page.
 After finding either pingback or webmention endpoints, the request is sent to each.
 
 
+### Simple Usage Example
+
+If you know the WebMention or Pingback endpoint already, and just want to use this
+class to send the payload, you can use the static methods provided.
+
+```php
+<?php
+IndieWeb\MentionClient::sendWebmention($endpoint, $source, $target);
+
+IndieWeb\MentionClient::sendPingback($endpoint, $source, $target);
+?>
+```
+
+
 Pingback
 --------
 
