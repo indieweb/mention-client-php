@@ -61,6 +61,23 @@ class MentionClient {
 
     return $this->c('supportsPingback', $target);
   }
+  
+  public function sendPingback($target) {
+    
+    $this->_debug("Sending pingback now!");
+
+    $pingbackServer = $this->c('pingbackServer', $target);
+    $this->_debug("Sending to pingback server: " . $pingbackServer);
+
+    $payload = xmlrpc_encode_request('pingback.ping', array($this->_sourceURL,  $target));
+
+    $response = $this->_post($pingbackServer, $payload, array(
+      'Content-type: application/xml'
+    ));
+    $this->_debug($response);
+
+    return true;
+  }
 
   public function _findWebmentionEndpoint($body) {
     if(preg_match('/<link[ ]+href="([^"]+)"[ ]+rel="http:\/\/webmention\.org\/"[ ]*\/?>/i', $body, $match)
@@ -102,6 +119,27 @@ class MentionClient {
 
     return $this->c('supportsWebmention', $target);
   }
+  
+  public function sendWebmention($target) {
+    
+    $this->_debug("Sending webmention now!");
+
+    $webmentionServer = $this->c('webmentionServer', $target);
+    $this->_debug("Sending to webmention server: " . $webmentionServer);
+
+    $payload = http_build_query(array(
+      'source' => $this->_sourceURL,
+      'target' => $target
+    ));
+
+    $response = $this->_post($webmentionServer, $payload, array(
+      'Content-type: application/x-www-form-urlencoded',
+      'Accept: application/json'
+    ));
+    $this->_debug($response);
+
+    return true;
+  }
 
   public function sendSupportedMentions($target=false) {
 
@@ -121,40 +159,12 @@ class MentionClient {
 
     // Try pingback first since it will be more common for now. Eventually will probably switch this.
     if($this->supportsPingback($target)) {
-      $this->_debug("Sending pingback now!");
-
-      $pingbackServer = $this->c('pingbackServer', $target);
-      $this->_debug("Sending to pingback server: " . $pingbackServer);
-
-      $payload = xmlrpc_encode_request('pingback.ping', array($this->_sourceURL,  $target));
-
-      $response = $this->_post($pingbackServer, $payload, array(
-        'Content-type: application/xml'
-      ));
-      $this->_debug($response);
-
-      $sent = true;
+      $sent = $this->sendPingback($target);
     }
 
     // Only send a webmention if we didn't find a pingback server
     if($sent == false && $this->supportsWebmention($target)) {
-      $this->_debug("Sending webmention now!");
-
-      $webmentionServer = $this->c('webmentionServer', $target);
-      $this->_debug("Sending to webmention server: " . $webmentionServer);
-
-      $payload = http_build_query(array(
-        'source' => $this->_sourceURL,
-        'target' => $target
-      ));
-
-      $response = $this->_post($webmentionServer, $payload, array(
-        'Content-type: application/x-www-form-urlencoded',
-        'Accept: application/json'
-      ));
-      $this->_debug($response);
-
-      $sent = true;
+      $sent = $this->sendWebmention($target);
     }
 
     if($sent) 
