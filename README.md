@@ -9,7 +9,7 @@ Usage
 ```php
 <?php
 $client = new IndieWeb\MentionClient($url);
-$client->debug = true;
+$client->debug(true);
 $sent = $client->sendSupportedMentions();
 
 echo "Sent $sent mentions\n";
