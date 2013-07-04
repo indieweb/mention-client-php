@@ -99,7 +99,18 @@ class MentionClient {
       }
 
       $headers = $this->c('headers', $target);
-      if(array_key_exists('Link', $headers) && preg_match('~<(https?://[^>]+)>; rel="http://webmention.org/"~', $headers['Link'], $match)) {
+      
+      $link_header = false;
+      
+      if (array_key_exists('Link', $headers)) {
+        if (is_array($headers['Link'])) {
+          $link_header = implode($headers['Link'], ",");
+        } else {
+          $link_header = $headers['Link'];
+        }
+      }
+
+      if($link_header && preg_match('~<(https?://[^>]+)>; rel="http://webmention.org/"~', $link_header, $match)) {
         $this->_debug("Found webmention server in header");
         $this->c('webmentionServer', $target, $match[1]);
         $this->c('supportsWebmention', $target, true);
