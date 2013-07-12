@@ -285,3 +285,18 @@ class MentionClient {
   }
 
 }
+
+if (!function_exists('xmlrpc_encode_request')) {
+  function xmlrpc_encode_request($method, $params) {
+    $xml  = '<?xml version="1.0"?>';
+    $xml .= '<methodCall>';
+    $xml .= '<methodName>'.htmlspecialchars($method).'</methodName>';
+    $xml .= '<params>';
+    foreach ($params as $param) {
+      $xml .= '<param><value><string>'.htmlspecialchars($param).'</string></value></param>';
+    }
+    $xml .= '</params></methodCall>';
+    
+    return $xml;
+  }
+}
