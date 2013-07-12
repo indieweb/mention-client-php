@@ -293,7 +293,7 @@ if (!function_exists('xmlrpc_encode_request')) {
     $xml .= '<methodName>'.$method.'</methodName>';
     $xml .= '<params>';
     foreach ($params as $param) {
-      $xml .= '<param><value><string>'.$param.'</string></value></param>';
+      $xml .= '<param><value><string>'.htmlspecialchars($param).'</string></value></param>';
     }
     $xml .= '</params></methodCall>';
     
