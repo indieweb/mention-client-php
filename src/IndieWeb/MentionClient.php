@@ -101,6 +101,15 @@ class MentionClient {
     }
   }
 
+  public function _findWebmentionEndpointInHeader($link_header) {
+    if(preg_match('~<(https?://[^>]+)>; rel="webmention"~', $link_header, $match)) {
+      return $match[1];
+    } elseif(preg_match('~<(https?://[^>]+)>; rel="http://webmention.org/?"~', $link_header, $match)) {
+      return $match[1];
+    }
+    return false;
+  }
+
   public function supportsWebmention($target) {
 
     if($this->c('supportsWebmention', $target) === null) {
@@ -123,9 +132,9 @@ class MentionClient {
         }
       }
 
-      if($link_header && preg_match('~<(https?://[^>]+)>; rel="http://webmention.org/"~', $link_header, $match)) {
+      if($link_header && ($endpoint=$this->_findWebmentionEndpointInHeader($link_header))) {
         $this->_debug("Found webmention server in header");
-        $this->c('webmentionServer', $target, $match[1]);
+        $this->c('webmentionServer', $target, $endpoint);
         $this->c('supportsWebmention', $target, true);
       } else {
         $this->_debug("No webmention server found in header, looking in the body now");
