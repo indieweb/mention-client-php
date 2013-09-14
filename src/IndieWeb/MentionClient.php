@@ -89,13 +89,25 @@ class MentionClient {
     return self::sendPingback($pingbackServer, $this->_sourceURL, $target);
   }
 
-  public function _findWebmentionEndpoint($body) {
-    if(preg_match('/<link[ ]+href="([^"]+)"[ ]+rel="http:\/\/webmention\.org\/"[ ]*\/?>/i', $body, $match)
-        || preg_match('/<link[ ]+rel="http:\/\/webmention\.org\/"[ ]+href="([^"]+)"[ ]*\/?>/i', $body, $match)) {
+  public function _findWebmentionEndpointInHTML($body) {
+    if(preg_match('/<link[ ]+href="([^"]+)"[ ]+rel="webmention"[ ]*\/?>/i', $body, $match)
+        || preg_match('/<link[ ]+rel="webmention"[ ]+href="([^"]+)"[ ]*\/?>/i', $body, $match)) {
+      return $match[1];
+    } elseif(preg_match('/<link[ ]+href="([^"]+)"[ ]+rel="http:\/\/webmention\.org\/?"[ ]*\/?>/i', $body, $match)
+        || preg_match('/<link[ ]+rel="http:\/\/webmention\.org\/?"[ ]+href="([^"]+)"[ ]*\/?>/i', $body, $match)) {
       return $match[1];
     } else {
       return false;
     }
+  }
+
+  public function _findWebmentionEndpointInHeader($link_header) {
+    if(preg_match('~<(https?://[^>]+)>; rel="webmention"~', $link_header, $match)) {
+      return $match[1];
+    } elseif(preg_match('~<(https?://[^>]+)>; rel="http://webmention.org/?"~', $link_header, $match)) {
+      return $match[1];
+    }
+    return false;
   }
 
   public function supportsWebmention($target) {
@@ -120,16 +132,16 @@ class MentionClient {
         }
       }
 
-      if($link_header && preg_match('~<(https?://[^>]+)>; rel="http://webmention.org/"~', $link_header, $match)) {
+      if($link_header && ($endpoint=$this->_findWebmentionEndpointInHeader($link_header))) {
         $this->_debug("Found webmention server in header");
-        $this->c('webmentionServer', $target, $match[1]);
+        $this->c('webmentionServer', $target, $endpoint);
         $this->c('supportsWebmention', $target, true);
       } else {
         $this->_debug("No webmention server found in header, looking in the body now");
         if(!$this->c('body', $target)) {
           $this->c('body', $target, $this->_fetchBody($target));
         }
-        if($endpoint=$this->_findWebmentionEndpoint($this->c('body', $target))) {
+        if($endpoint=$this->_findWebmentionEndpointInHTML($this->c('body', $target))) {
           $this->c('webmentionServer', $target, $endpoint);
           $this->c('supportsWebmention', $target, true);
         }
