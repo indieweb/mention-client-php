@@ -3,7 +3,7 @@
   "description": "Client library for sending webmention and pingback notifications",
   "type": "library",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/indieweb/mention-client",
+  "homepage": "https://github.com/indieweb/mention-client-php",
   "authors": [
     {
       "name": "Aaron Parecki",
