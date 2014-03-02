@@ -64,7 +64,7 @@ class TagParserTest extends PHPUnit_Framework_TestCase {
   public function testFindWebmentionTagRelativeUrl() {
     $html = '<link href="/webmention" rel="webmention">';
     $client = new IndieWeb\MentionClient('http://example.com/post/1', $html);
-    $endpoint = $client->_findWebmentionEndpointInHTML($html);
+    $endpoint = $client->_findWebmentionEndpointInHTML($html, 'http://example.com/post/1');
     $this->assertEquals('http://example.com/webmention', $endpoint);
   }
 

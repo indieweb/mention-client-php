@@ -89,7 +89,7 @@ class MentionClient {
     return self::sendPingback($pingbackServer, $this->_sourceURL, $target);
   }
 
-  public function _findWebmentionEndpointInHTML($body) {
+  public function _findWebmentionEndpointInHTML($body, $targetURL=false) {
     $endpoint = false;
     if(preg_match('/<link[ ]+href="([^"]+)"[ ]+rel="webmention"[ ]*\/?>/i', $body, $match)
         || preg_match('/<link[ ]+rel="webmention"[ ]+href="([^"]+)"[ ]*\/?>/i', $body, $match)) {
@@ -98,9 +98,9 @@ class MentionClient {
         || preg_match('/<link[ ]+rel="http:\/\/webmention\.org\/?"[ ]+href="([^"]+)"[ ]*\/?>/i', $body, $match)) {
       $endpoint = $match[1];
     }
-    if($endpoint && $this->_sourceURL && function_exists('\mf2\resolveUrl')) {
+    if($endpoint && $targetURL && function_exists('\mf2\resolveUrl')) {
       // Resolve the URL if it's relative
-      $endpoint = \mf2\resolveUrl($this->_sourceURL, $endpoint);
+      $endpoint = \mf2\resolveUrl($targetURL, $endpoint);
     }
     return $endpoint;
   }
@@ -145,7 +145,7 @@ class MentionClient {
         if(!$this->c('body', $target)) {
           $this->c('body', $target, $this->_fetchBody($target));
         }
-        if($endpoint=$this->_findWebmentionEndpointInHTML($this->c('body', $target))) {
+        if($endpoint=$this->_findWebmentionEndpointInHTML($this->c('body', $target), $target)) {
           $this->c('webmentionServer', $target, $endpoint);
           $this->c('supportsWebmention', $target, true);
         }
