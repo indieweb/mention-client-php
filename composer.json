@@ -18,6 +18,7 @@
   },
   "minimum-stability": "dev",
   "require": {
-    "php": ">=5.3"
+    "php": ">=5.3",
+    "mf2/mf2": "0.2.*"
   }
 }

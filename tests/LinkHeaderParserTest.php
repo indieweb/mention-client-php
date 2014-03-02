@@ -1,6 +1,4 @@
 <?php
-require_once('src/IndieWeb/MentionClient.php');
-
 class LinkHeaderParserTest extends PHPUnit_Framework_TestCase {
 
   public $client;

@@ -1,6 +1,4 @@
 <?php
-require_once('src/IndieWeb/MentionClient.php');
-
 class TagParserTest extends PHPUnit_Framework_TestCase {
 
   public $client;
@@ -60,6 +58,13 @@ class TagParserTest extends PHPUnit_Framework_TestCase {
   public function testFindWebmentionTagNoCloseTag() {
     $html = '<link href="http://example.com/webmention" rel="http://webmention.org/">';
     $endpoint = $this->client->_findWebmentionEndpointInHTML($html);
+    $this->assertEquals('http://example.com/webmention', $endpoint);
+  }
+
+  public function testFindWebmentionTagRelativeUrl() {
+    $html = '<link href="/webmention" rel="webmention">';
+    $client = new IndieWeb\MentionClient('http://example.com/post/1', $html);
+    $endpoint = $client->_findWebmentionEndpointInHTML($html);
     $this->assertEquals('http://example.com/webmention', $endpoint);
   }
 

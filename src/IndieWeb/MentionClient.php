@@ -90,15 +90,19 @@ class MentionClient {
   }
 
   public function _findWebmentionEndpointInHTML($body) {
+    $endpoint = false;
     if(preg_match('/<link[ ]+href="([^"]+)"[ ]+rel="webmention"[ ]*\/?>/i', $body, $match)
         || preg_match('/<link[ ]+rel="webmention"[ ]+href="([^"]+)"[ ]*\/?>/i', $body, $match)) {
-      return $match[1];
+      $endpoint = $match[1];
     } elseif(preg_match('/<link[ ]+href="([^"]+)"[ ]+rel="http:\/\/webmention\.org\/?"[ ]*\/?>/i', $body, $match)
         || preg_match('/<link[ ]+rel="http:\/\/webmention\.org\/?"[ ]+href="([^"]+)"[ ]*\/?>/i', $body, $match)) {
-      return $match[1];
-    } else {
-      return false;
+      $endpoint = $match[1];
     }
+    if($endpoint && $this->_sourceURL && function_exists('\mf2\resolveUrl')) {
+      // Resolve the URL if it's relative
+      $endpoint = \mf2\resolveUrl($this->_sourceURL, $endpoint);
+    }
+    return $endpoint;
   }
 
   public function _findWebmentionEndpointInHeader($link_header) {
