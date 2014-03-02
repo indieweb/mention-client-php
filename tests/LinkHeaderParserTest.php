@@ -53,4 +53,10 @@ Link: <http://pubsubhubbub.appspot.com>; rel=\"hub\", <http://pubsubhubbub.super
     $this->assertEquals(true, $supports);
   }
 
+  public function testFindWebmentionHeaderRelativeUrl() {
+    $header = '</webmention>; rel="webmention"';
+    $endpoint = $this->client->_findWebmentionEndpointInHeader($header, 'http://example.com/post/1');
+    $this->assertEquals('http://example.com/webmention', $endpoint);
+  }
+
 }
