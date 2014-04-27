@@ -18,7 +18,11 @@ class MentionClient {
   private $_pingbackServer = array();
   private $_webmentionServer = array();
 
-  public function __construct($sourceURL, $sourceBody=false) {
+  private $_proxy = false;
+  private static $_proxyStatic = false;
+  
+  public function __construct($sourceURL, $sourceBody=false, $proxyString=false) {
+    $this->setProxy($proxyString);
     $this->_sourceURL = $sourceURL;
     if($sourceBody)
       $this->_sourceBody = $sourceBody;
@@ -28,6 +32,11 @@ class MentionClient {
     // Find all external links in the source
     preg_match_all("/<a[^>]+href=.(https?:\/\/[^'\"]+)/i", $this->_sourceBody, $matches);
     $this->_links = array_unique($matches[1]);
+  }
+  
+  public function setProxy($proxy_string) {
+      $this->_proxy = $proxy_string;
+      self::$_proxyStatic = $proxy_string;
   }
 
   public function supportsPingback($target) {
@@ -242,6 +251,7 @@ class MentionClient {
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_HEADER, true);
     curl_setopt($ch, CURLOPT_NOBODY, true);
+    if ($this->_proxy) curl_setopt($ch, CURLOPT_PROXY, $this->_proxy);
     $response = curl_exec($ch);
     return $this->_parse_headers($response);
   }
@@ -251,6 +261,7 @@ class MentionClient {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    if ($this->_proxy) curl_setopt($ch, CURLOPT_PROXY, $this->_proxy);
     return curl_exec($ch);
   }
 
@@ -273,6 +284,7 @@ class MentionClient {
   private static function _get($url) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    if (self::$_proxyStatic) curl_setopt($ch, CURLOPT_PROXY, self::$_proxyStatic);
     return curl_exec($ch);
   }
 
@@ -282,6 +294,7 @@ class MentionClient {
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    if (self::$_proxyStatic) curl_setopt($ch, CURLOPT_PROXY, self::$_proxyStatic);
     $response = curl_exec($ch);
     self::_debug_($response);
     if($returnHTTPCode)
