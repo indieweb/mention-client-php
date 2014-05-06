@@ -13,6 +13,12 @@ class TagParserTest extends PHPUnit_Framework_TestCase {
     $this->assertEquals('http://example.com/webmention', $endpoint);
   }
 
+  public function testFindWebmentionATagRelWebmentionHref() {
+    $html = '<a rel="webmention" href="http://example.com/webmention">this site supports webmention</a>';
+    $endpoint = $this->client->_findWebmentionEndpointInHTML($html);
+    $this->assertEquals('http://example.com/webmention', $endpoint);
+  }
+
   public function testFindWebmentionTagHrefRelWebmention() {
     $html = '<link href="http://example.com/webmention" rel="webmention" />';
     $endpoint = $this->client->_findWebmentionEndpointInHTML($html);

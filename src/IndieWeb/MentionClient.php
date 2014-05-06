@@ -91,11 +91,11 @@ class MentionClient {
 
   public function _findWebmentionEndpointInHTML($body, $targetURL=false) {
     $endpoint = false;
-    if(preg_match('/<link[ ]+href="([^"]+)"[ ]+rel="webmention"[ ]*\/?>/i', $body, $match)
-        || preg_match('/<link[ ]+rel="webmention"[ ]+href="([^"]+)"[ ]*\/?>/i', $body, $match)) {
+    if(preg_match('/<(?:link|a)[ ]+href="([^"]+)"[ ]+rel="webmention"[ ]*\/?>/i', $body, $match)
+        || preg_match('/<(?:link|a)[ ]+rel="webmention"[ ]+href="([^"]+)"[ ]*\/?>/i', $body, $match)) {
       $endpoint = $match[1];
-    } elseif(preg_match('/<link[ ]+href="([^"]+)"[ ]+rel="http:\/\/webmention\.org\/?"[ ]*\/?>/i', $body, $match)
-        || preg_match('/<link[ ]+rel="http:\/\/webmention\.org\/?"[ ]+href="([^"]+)"[ ]*\/?>/i', $body, $match)) {
+    } elseif(preg_match('/<(?:link|a)[ ]+href="([^"]+)"[ ]+rel="http:\/\/webmention\.org\/?"[ ]*\/?>/i', $body, $match)
+        || preg_match('/<(?:link|a)[ ]+rel="http:\/\/webmention\.org\/?"[ ]+href="([^"]+)"[ ]*\/?>/i', $body, $match)) {
       $endpoint = $match[1];
     }
     if($endpoint && $targetURL && function_exists('\mf2\resolveUrl')) {
