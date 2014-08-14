@@ -40,7 +40,7 @@ IndieWeb\MentionClient::sendPingback($endpoint, $source, $target);
 Pingback
 --------
 
-If you want to accept pingbacks on your site, check out [pingback.me](http://pingback.me)
+If you want to accept pingbacks on your site, check out [webmention.io](http://webmention.io/#use-it)
 which handles accepting the XMLRPC request and exposes the data via an API.
 
 
@@ -49,7 +49,7 @@ Webmention
 
 To learn more about Webmention, see [webmention.org](http://webmention.org).
 
-The [pingback.me](http://pingback.me) project can also act as a pingback->webmention
+The [webmention.io](http://webmention.io/) service can also act as a pingback->webmention
 proxy which will allow you to accept pingbacks as if they were sent as JSON webmentions.
 
 
