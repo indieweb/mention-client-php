@@ -79,14 +79,11 @@ class MentionClient {
       'Content-type: application/xml'
     ));
 
-    if(@$decoded=xmlrpc_decode($response)) {
-      if(is_string($decoded))
-        return true; // pingback returns a string like "Pingback was successful" when it works
-      else
-        return false; // otherwise returns an array like array('faultCode'=>48,'faultString'=>'The pingback has already been registered')
-    } else {
-      return false;
-    }
+    if(is_array(xmlrpc_decode($response))):
+        return false;
+    elseif(is_string($response) && !empty($response)): 
+        return true;
+    endif;
   }
 
   public function sendPingbackPayload($target) {
