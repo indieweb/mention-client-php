@@ -17,6 +17,7 @@ class MentionClient {
   private $_supportsWebmention = array();
   private $_pingbackServer = array();
   private $_webmentionServer = array();
+  private $_urls_returned = array();
 
   private $_proxy = false;
   private static $_proxyStatic = false;
@@ -168,7 +169,7 @@ class MentionClient {
     return $this->c('supportsWebmention', $target);
   }
   
-  public static function sendWebmention($endpoint, $source, $target) {
+  public function sendWebmention($endpoint, $source, $target) {
     
     $payload = http_build_query(array(
       'source' => $source,
@@ -180,8 +181,15 @@ class MentionClient {
       'Accept: application/json'
     ), true);
 
+    if($response[1]){
+      $results = array();
+      $results = json_decode($response[1], true);
+      if($results['url']){
+        $this->_urls_returned[] = $results['url'];
+      }
+    }
     // Return true if the remote endpoint accepted it
-    return in_array($response, array(200,202));
+    return in_array($response[0], array(200,202));
   }
 
   public function sendWebmentionPayload($target) {
@@ -253,6 +261,10 @@ class MentionClient {
     return $this->_parse_headers($response);
   }
 
+  public function getReturnedUrls(){
+    return $this->_urls_returned;
+  }
+
   private function _fetchBody($url) {
     $this->_debug("Fetching body...");
     $ch = curl_init($url);
@@ -298,7 +310,7 @@ class MentionClient {
     $response = curl_exec($ch);
     self::_debug_($response);
     if($returnHTTPCode)
-      return curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      return array(curl_getinfo($ch, CURLINFO_HTTP_CODE), $response);
     else
       return $response;
   }
