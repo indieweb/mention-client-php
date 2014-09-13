@@ -6,6 +6,8 @@ class MentionClient {
   private $_debugging = false;
   private static $_debugStatic = false;
 
+  private $_debug_data = '';
+
   private $_sourceURL;
   private $_sourceBody;
 
@@ -150,6 +152,15 @@ class MentionClient {
 
       if($link_header && ($endpoint=$this->_findWebmentionEndpointInHeader($link_header, $target))) {
         $this->_debug("Found webmention server in header");
+
+	if(strpos($endpoint, 'https://') !== 0 && strpos($endpoint, 'http://') !== 0 ){
+	  $this->_debug('Relative endpoint found... fixing.');
+	  $matches = array();
+	  preg_match('/(https?:\/\/[^\/]+)/i', $target, $matches);
+	  $endpoint = $matches[0] . $endpoint;
+	  $this->_debug('Corrected endpoint : '.$endpoint);
+	}
+
         $this->c('webmentionServer', $target, $endpoint);
         $this->c('supportsWebmention', $target, true);
       } else {
@@ -158,6 +169,13 @@ class MentionClient {
           $this->c('body', $target, $this->_fetchBody($target));
         }
         if($endpoint=$this->_findWebmentionEndpointInHTML($this->c('body', $target), $target)) {
+	  if(strpos($endpoint, 'https://') !== 0 && strpos($endpoint, 'http://') !== 0 ){
+	    $this->_debug('Relative endpoint found... fixing.');
+	    $matches = array();
+	    preg_match('/(https?:\/\/[^\/]+)/i', $target, $matches);
+	    $endpoint = $matches[0] . $endpoint;
+	    $this->_debug('Corrected endpoint : '.$endpoint);
+	  }
           $this->c('webmentionServer', $target, $endpoint);
           $this->c('supportsWebmention', $target, true);
         }
@@ -242,8 +260,12 @@ class MentionClient {
   }
   private function _debug($msg) {
     if($this->_debugging)
-      echo "\t" . $msg . "\n";
+      $this->_debug_data .= "\t" . $msg . "\n";
   }
+  public function getDebug(){
+      return $this->_debug_data;
+  }
+
   private static function _debug_($msg) {
     if(self::$_debugStatic)
       echo "\t" . $msg . "\n";
