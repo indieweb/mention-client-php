@@ -187,12 +187,17 @@ class MentionClient {
     return $this->c('supportsWebmention', $target);
   }
   
-  public function sendWebmention($endpoint, $source, $target) {
+  public function sendWebmention($endpoint, $source, $target, $vouch= null) {
     
-    $payload = http_build_query(array(
+    $build = array(
       'source' => $source,
       'target' => $target
-    ));
+    );
+    if($vouch) {
+      $build['vouch'] = $vouch;
+    }
+    
+    $payload = http_build_query($build);
 
     $response = self::_post($endpoint, $payload, array(
       'Content-type: application/x-www-form-urlencoded',
@@ -210,35 +215,38 @@ class MentionClient {
     return in_array($response[0], array(200,202));
   }
 
-  public function sendWebmentionPayload($target) {
+  public function sendWebmentionPayload($target, $vouch=null) {
     
     $this->_debug("Sending webmention now!");
 
     $webmentionServer = $this->c('webmentionServer', $target);
     $this->_debug("Sending to webmention server: " . $webmentionServer);
 
-    return self::sendWebmention($webmentionServer, $this->_sourceURL, $target);
+    return self::sendWebmention($webmentionServer, $this->_sourceURL, $target, $vouch);
   }
 
-  public function sendSupportedMentions($target=false) {
-
-    if($target == false) {
+  public function sendSupportedMentions($vouch_set = false) {
       $totalAccepted = 0;
 
       foreach($this->_links as $link) {
         $this->_debug("Checking $link");
-        $totalAccepted += $this->sendSupportedMentions($link);
+        if($vouch_set){
+            $totalAccepted += $this->sendSupportedMentionsToLink($link, $vouch_set[$link]);
+        } else {
+            $totalAccepted += $this->sendSupportedMentionsToLink($link);
+        }
         $this->_debug('');
       }
 
       return $totalAccepted;
-    }
+  }
 
+  public function sendSupportedMentionsToLink($target, $vouch = false) {
     $accepted = false;
 
     // Look for a webmention endpoint first
     if($this->supportsWebmention($target)) {
-      $accepted = $this->sendWebmentionPayload($target);
+      $accepted = $this->sendWebmentionPayload($target, $vouch);
     // Only look for a pingback server if we didn't find a webmention server
     } else 
     if($this->supportsPingback($target)) {
