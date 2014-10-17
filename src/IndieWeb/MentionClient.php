@@ -10,6 +10,7 @@ class MentionClient {
 
   private $_sourceURL;
   private $_sourceBody;
+  private $_shortURL;
 
   private $_links = array();
 
@@ -24,9 +25,10 @@ class MentionClient {
   private $_proxy = false;
   private static $_proxyStatic = false;
   
-  public function __construct($sourceURL, $sourceBody=false, $proxyString=false) {
+  public function __construct($sourceURL, $sourceBody=false, $proxyString=false, $shortURL=false) {
     $this->setProxy($proxyString);
     $this->_sourceURL = $sourceURL;
+    $this->_shortURL = $shortURL;
     if($sourceBody)
       $this->_sourceBody = $sourceBody;
     else
@@ -222,7 +224,12 @@ class MentionClient {
     $webmentionServer = $this->c('webmentionServer', $target);
     $this->_debug("Sending to webmention server: " . $webmentionServer);
 
-    return self::sendWebmention($webmentionServer, $this->_sourceURL, $target, $vouch);
+    if($this->_shortURL && ((strpos($target,'brid.gy') !== FALSE && strpos($target,'brid.gy') < 10) ||
+    (strpos($target,'brid-gy') !== FALSE && strpos($target,'brid-gy') < 10))){
+        return self::sendWebmention($webmentionServer, $this->_shortURL, $target, $vouch);
+    } else {
+        return self::sendWebmention($webmentionServer, $this->_sourceURL, $target, $vouch);
+    }
   }
 
   public function sendSupportedMentions($vouch_class = false) {
