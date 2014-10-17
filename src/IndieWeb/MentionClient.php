@@ -225,13 +225,13 @@ class MentionClient {
     return self::sendWebmention($webmentionServer, $this->_sourceURL, $target, $vouch);
   }
 
-  public function sendSupportedMentions($vouch_set = false) {
+  public function sendSupportedMentions($vouch_class = false) {
       $totalAccepted = 0;
 
       foreach($this->_links as $link) {
         $this->_debug("Checking $link");
-        if($vouch_set){
-            $totalAccepted += $this->sendSupportedMentionsToLink($link, $vouch_set[$link]);
+        if($vouch_class){
+            $totalAccepted += $this->sendSupportedMentionsToLink($link, $vouch_class->getPossibleVouchFor($link));
         } else {
             $totalAccepted += $this->sendSupportedMentionsToLink($link);
         }
