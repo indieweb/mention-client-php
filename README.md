@@ -22,6 +22,21 @@ for supported servers, if none are found, then it searches the body of the page.
 
 After finding either pingback or webmention endpoints, the request is sent to each.
 
+### Selectively sending Webmentions
+
+If you want to send mentions for just the links inside your post content, you can 
+pass in a chunk of HTML to parse instead of having this client fetch the HTML
+from your page.
+
+```php
+   $client = new IndieWeb\MentionClient($url, $html);
+   $client->debug(true);
+   $sent = $client->sendSupportedMentions();
+```
+
+In this case, no initial GET request is made to your `$url`, instead, the HTML passed
+in to the function is parsed for all absolute `<a>` tags.
+
 
 ### Simple Usage Example
 
