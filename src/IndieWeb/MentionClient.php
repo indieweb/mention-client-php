@@ -6,8 +6,11 @@ class MentionClient {
   private $_debugging = false;
   private static $_debugStatic = false;
 
+  private $_debug_data = '';
+
   private $_sourceURL;
   private $_sourceBody;
+  private $_shortURL;
 
   private $_links = array();
 
@@ -17,13 +20,15 @@ class MentionClient {
   private $_supportsWebmention = array();
   private $_pingbackServer = array();
   private $_webmentionServer = array();
+  private $_urls_returned = array();
 
   private $_proxy = false;
   private static $_proxyStatic = false;
   
-  public function __construct($sourceURL, $sourceBody=false, $proxyString=false) {
+  public function __construct($sourceURL, $sourceBody=false, $proxyString=false, $shortURL=false) {
     $this->setProxy($proxyString);
     $this->_sourceURL = $sourceURL;
+    $this->_shortURL = $shortURL;
     if($sourceBody)
       $this->_sourceBody = $sourceBody;
     else
@@ -149,6 +154,15 @@ class MentionClient {
 
       if($link_header && ($endpoint=$this->_findWebmentionEndpointInHeader($link_header, $target))) {
         $this->_debug("Found webmention server in header");
+
+	if(strpos($endpoint, 'https://') !== 0 && strpos($endpoint, 'http://') !== 0 ){
+	  $this->_debug('Relative endpoint found... fixing.');
+	  $matches = array();
+	  preg_match('/(https?:\/\/[^\/]+)/i', $target, $matches);
+	  $endpoint = $matches[0] . $endpoint;
+	  $this->_debug('Corrected endpoint : '.$endpoint);
+	}
+
         $this->c('webmentionServer', $target, $endpoint);
         $this->c('supportsWebmention', $target, true);
       } else {
@@ -157,6 +171,13 @@ class MentionClient {
           $this->c('body', $target, $this->_fetchBody($target));
         }
         if($endpoint=$this->_findWebmentionEndpointInHTML($this->c('body', $target), $target)) {
+	  if(strpos($endpoint, 'https://') !== 0 && strpos($endpoint, 'http://') !== 0 ){
+	    $this->_debug('Relative endpoint found... fixing.');
+	    $matches = array();
+	    preg_match('/(https?:\/\/[^\/]+)/i', $target, $matches);
+	    $endpoint = $matches[0] . $endpoint;
+	    $this->_debug('Corrected endpoint : '.$endpoint);
+	  }
           $this->c('webmentionServer', $target, $endpoint);
           $this->c('supportsWebmention', $target, true);
         }
@@ -168,51 +189,71 @@ class MentionClient {
     return $this->c('supportsWebmention', $target);
   }
   
-  public static function sendWebmention($endpoint, $source, $target) {
+  public function sendWebmention($endpoint, $source, $target, $vouch= null) {
     
-    $payload = http_build_query(array(
+    $build = array(
       'source' => $source,
       'target' => $target
-    ));
+    );
+    if($vouch) {
+      $build['vouch'] = $vouch;
+    }
+    
+    $payload = http_build_query($build);
 
     $response = self::_post($endpoint, $payload, array(
       'Content-type: application/x-www-form-urlencoded',
       'Accept: application/json'
     ), true);
 
+    if($response[1]){
+      $results = array();
+      $results = json_decode($response[1], true);
+      if($results['url']){
+        $this->_urls_returned[] = $results['url'];
+      }
+    }
     // Return true if the remote endpoint accepted it
-    return in_array($response, array(200,202));
+    return in_array($response[0], array(200,202));
   }
 
-  public function sendWebmentionPayload($target) {
+  public function sendWebmentionPayload($target, $vouch=null) {
     
     $this->_debug("Sending webmention now!");
 
     $webmentionServer = $this->c('webmentionServer', $target);
     $this->_debug("Sending to webmention server: " . $webmentionServer);
 
-    return self::sendWebmention($webmentionServer, $this->_sourceURL, $target);
+    if($this->_shortURL && ((strpos($target,'brid.gy') !== FALSE && strpos($target,'brid.gy') < 10) ||
+    (strpos($target,'brid-gy') !== FALSE && strpos($target,'brid-gy') < 10))){
+        return self::sendWebmention($webmentionServer, $this->_shortURL, $target, $vouch);
+    } else {
+        return self::sendWebmention($webmentionServer, $this->_sourceURL, $target, $vouch);
+    }
   }
 
-  public function sendSupportedMentions($target=false) {
-
-    if($target == false) {
+  public function sendSupportedMentions($vouch_class = false) {
       $totalAccepted = 0;
 
       foreach($this->_links as $link) {
         $this->_debug("Checking $link");
-        $totalAccepted += $this->sendSupportedMentions($link);
+        if($vouch_class){
+            $totalAccepted += $this->sendSupportedMentionsToLink($link, $vouch_class->getPossibleVouchFor($link));
+        } else {
+            $totalAccepted += $this->sendSupportedMentionsToLink($link);
+        }
         $this->_debug('');
       }
 
       return $totalAccepted;
-    }
+  }
 
+  public function sendSupportedMentionsToLink($target, $vouch = false) {
     $accepted = false;
 
     // Look for a webmention endpoint first
     if($this->supportsWebmention($target)) {
-      $accepted = $this->sendWebmentionPayload($target);
+      $accepted = $this->sendWebmentionPayload($target, $vouch);
     // Only look for a pingback server if we didn't find a webmention server
     } else 
     if($this->supportsPingback($target)) {
@@ -234,8 +275,12 @@ class MentionClient {
   }
   private function _debug($msg) {
     if($this->_debugging)
-      echo "\t" . $msg . "\n";
+      $this->_debug_data .= "\t" . $msg . "\n";
   }
+  public function getDebug(){
+      return $this->_debug_data;
+  }
+
   private static function _debug_($msg) {
     if(self::$_debugStatic)
       echo "\t" . $msg . "\n";
@@ -251,6 +296,10 @@ class MentionClient {
     if ($this->_proxy) curl_setopt($ch, CURLOPT_PROXY, $this->_proxy);
     $response = curl_exec($ch);
     return $this->_parse_headers($response);
+  }
+
+  public function getReturnedUrls(){
+    return $this->_urls_returned;
   }
 
   private function _fetchBody($url) {
@@ -298,7 +347,7 @@ class MentionClient {
     $response = curl_exec($ch);
     self::_debug_($response);
     if($returnHTTPCode)
-      return curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      return array(curl_getinfo($ch, CURLINFO_HTTP_CODE), $response);
     else
       return $response;
   }
