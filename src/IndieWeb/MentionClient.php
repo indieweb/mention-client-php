@@ -27,7 +27,7 @@ class MentionClient {
     if($sourceBody)
       $this->_sourceBody = $sourceBody;
     else
-      $this->_sourceBody = self::_get($sourceURL);
+      $this->_sourceBody = static::_get($sourceURL);
 
     // Find all external links in the source
     preg_match_all("/<a[^>]+href=.(https?:\/\/[^'\"]+)/i", $this->_sourceBody, $matches);
@@ -75,7 +75,7 @@ class MentionClient {
   public static function sendPingback($endpoint, $source, $target) {    
     $payload = xmlrpc_encode_request('pingback.ping', array($source,  $target));
 
-    $response = self::_post($endpoint, $payload, array(
+    $response = static::_post($endpoint, $payload, array(
       'Content-type: application/xml'
     ));
 
@@ -175,7 +175,7 @@ class MentionClient {
       'target' => $target
     ));
 
-    $response = self::_post($endpoint, $payload, array(
+    $response = static::_post($endpoint, $payload, array(
       'Content-type: application/x-www-form-urlencoded',
       'Accept: application/json'
     ), true);
