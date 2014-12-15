@@ -241,7 +241,7 @@ class MentionClient {
       echo "\t" . $msg . "\n";
   }
 
-  private function _fetchHead($url) {
+  protected function _fetchHead($url) {
     $this->_debug("Fetching headers...");
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -253,7 +253,7 @@ class MentionClient {
     return $this->_parse_headers($response);
   }
 
-  private function _fetchBody($url) {
+  protected function _fetchBody($url) {
     $this->_debug("Fetching body...");
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
