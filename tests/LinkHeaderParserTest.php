@@ -16,7 +16,9 @@ Connection: keep-alive\r
 X-Powered-By: PHP/5.3.13\r
 X-Pingback: http://pingback.me/webmention?forward=http%3A%2F%2Faaronparecki.com%2Fwebmention.php\r
 Link: <http://aaronparecki.com/webmention.php>; rel=\"http://webmention.org/\"\r
-Link: <http://aaronparecki.com/>; rel=\"me\"";
+Link: <http://aaronparecki.com/webmention.php>; rel=\"webmention\"\r
+Link: <http://aaronparecki.com/>; rel=\"me\"\r
+";
 	
     $target = 'http://aaronparecki.com/';
     $this->client->c('headers', $target, $this->client->_parse_headers($headers));
