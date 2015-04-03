@@ -22,6 +22,21 @@ for supported servers, if none are found, then it searches the body of the page.
 
 After finding either pingback or webmention endpoints, the request is sent to each.
 
+### Selectively sending Webmentions
+
+If you want to send mentions for just the links inside your post content, you can 
+pass in a chunk of HTML to parse instead of having this client fetch the HTML
+from your page.
+
+```php
+   $client = new IndieWeb\MentionClient($url, $html);
+   $client->debug(true);
+   $sent = $client->sendSupportedMentions();
+```
+
+In this case, no initial GET request is made to your `$url`, instead, the HTML passed
+in to the function is parsed for all absolute `<a>` tags.
+
 
 ### Simple Usage Example
 
@@ -40,7 +55,7 @@ IndieWeb\MentionClient::sendPingback($endpoint, $source, $target);
 Pingback
 --------
 
-If you want to accept pingbacks on your site, check out [pingback.me](http://pingback.me)
+If you want to accept pingbacks on your site, check out [webmention.io](http://webmention.io/#use-it)
 which handles accepting the XMLRPC request and exposes the data via an API.
 
 
@@ -49,7 +64,7 @@ Webmention
 
 To learn more about Webmention, see [webmention.org](http://webmention.org).
 
-The [pingback.me](http://pingback.me) project can also act as a pingback->webmention
+The [webmention.io](http://webmention.io/) service can also act as a pingback->webmention
 proxy which will allow you to accept pingbacks as if they were sent as JSON webmentions.
 
 

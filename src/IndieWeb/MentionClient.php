@@ -18,16 +18,25 @@ class MentionClient {
   private $_pingbackServer = array();
   private $_webmentionServer = array();
 
-  public function __construct($sourceURL, $sourceBody=false) {
+  private $_proxy = false;
+  private static $_proxyStatic = false;
+  
+  public function __construct($sourceURL, $sourceBody=false, $proxyString=false) {
+    $this->setProxy($proxyString);
     $this->_sourceURL = $sourceURL;
     if($sourceBody)
       $this->_sourceBody = $sourceBody;
     else
-      $this->_sourceBody = self::_get($sourceURL);
+      $this->_sourceBody = static::_get($sourceURL);
 
     // Find all external links in the source
     preg_match_all("/<a[^>]+href=.(https?:\/\/[^'\"]+)/i", $this->_sourceBody, $matches);
     $this->_links = array_unique($matches[1]);
+  }
+  
+  public function setProxy($proxy_string) {
+      $this->_proxy = $proxy_string;
+      self::$_proxyStatic = $proxy_string;
   }
 
   public function supportsPingback($target) {
@@ -66,18 +75,15 @@ class MentionClient {
   public static function sendPingback($endpoint, $source, $target) {    
     $payload = xmlrpc_encode_request('pingback.ping', array($source,  $target));
 
-    $response = self::_post($endpoint, $payload, array(
+    $response = static::_post($endpoint, $payload, array(
       'Content-type: application/xml'
     ));
 
-    if(@$decoded=xmlrpc_decode($response)) {
-      if(is_string($decoded))
-        return true; // pingback returns a string like "Pingback was successful" when it works
-      else
-        return false; // otherwise returns an array like array('faultCode'=>48,'faultString'=>'The pingback has already been registered')
-    } else {
-      return false;
-    }
+    if(is_array(xmlrpc_decode($response))):
+        return false;
+    elseif(is_string($response) && !empty($response)): 
+        return true;
+    endif;
   }
 
   public function sendPingbackPayload($target) {
@@ -169,7 +175,7 @@ class MentionClient {
       'target' => $target
     ));
 
-    $response = self::_post($endpoint, $payload, array(
+    $response = static::_post($endpoint, $payload, array(
       'Content-type: application/x-www-form-urlencoded',
       'Accept: application/json'
     ), true);
@@ -235,22 +241,24 @@ class MentionClient {
       echo "\t" . $msg . "\n";
   }
 
-  private function _fetchHead($url) {
+  protected function _fetchHead($url) {
     $this->_debug("Fetching headers...");
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_HEADER, true);
     curl_setopt($ch, CURLOPT_NOBODY, true);
+    if ($this->_proxy) curl_setopt($ch, CURLOPT_PROXY, $this->_proxy);
     $response = curl_exec($ch);
     return $this->_parse_headers($response);
   }
 
-  private function _fetchBody($url) {
+  protected function _fetchBody($url) {
     $this->_debug("Fetching body...");
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    if ($this->_proxy) curl_setopt($ch, CURLOPT_PROXY, $this->_proxy);
     return curl_exec($ch);
   }
 
@@ -261,6 +269,9 @@ class MentionClient {
       if(preg_match('/([^:]+): (.+)/m', $field, $match)) {
         $match[1] = preg_replace('/(?<=^|[\x09\x20\x2D])./e', 'strtoupper("\0")', strtolower(trim($match[1])));
         // If there's already a value set for the header name being returned, turn it into an array and add the new value
+        $match[1] = preg_replace_callback('/(?<=^|[\x09\x20\x2D])./', function($m) {
+          return strtoupper($m[0]);
+        }, strtolower(trim($match[1])));
         if(isset($retVal[$match[1]])) {
           if(!is_array($retVal[$match[1]]))
             $retVal[$match[1]] = array($retVal[$match[1]]);
@@ -276,6 +287,7 @@ class MentionClient {
   private static function _get($url) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    if (self::$_proxyStatic) curl_setopt($ch, CURLOPT_PROXY, self::$_proxyStatic);
     return curl_exec($ch);
   }
 
@@ -285,6 +297,7 @@ class MentionClient {
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    if (self::$_proxyStatic) curl_setopt($ch, CURLOPT_PROXY, self::$_proxyStatic);
     $response = curl_exec($ch);
     self::_debug_($response);
     if($returnHTTPCode)
