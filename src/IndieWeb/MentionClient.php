@@ -224,8 +224,8 @@ class MentionClient {
     $webmentionServer = $this->c('webmentionServer', $target);
     $this->_debug("Sending to webmention server: " . $webmentionServer);
 
-    if($this->_shortURL && ((strpos($target,'brid.gy') !== FALSE && strpos($target,'brid.gy') < 10) ||
-    (strpos($target,'brid-gy') !== FALSE && strpos($target,'brid-gy') < 10))){
+    if($this->_shortURL && ((strpos($target,'brid.gy') !== FALSE && strpos($target,'brid.gy') < 15) ||
+    (strpos($target,'brid-gy') !== FALSE && strpos($target,'brid-gy') < 15))){
         return self::sendWebmention($webmentionServer, $this->_shortURL, $target, $vouch);
     } else {
         return self::sendWebmention($webmentionServer, $this->_sourceURL, $target, $vouch);
