@@ -20,7 +20,7 @@ class MentionClient {
 
   private $_proxy = false;
   private static $_proxyStatic = false;
-  
+
   public function __construct($sourceURL, $sourceBody=false, $proxyString=false) {
     $this->setProxy($proxyString);
     $this->_sourceURL = $sourceURL;
@@ -33,7 +33,7 @@ class MentionClient {
     preg_match_all("/<a[^>]+href=.(https?:\/\/[^'\"]+)/i", $this->_sourceBody, $matches);
     $this->_links = array_unique($matches[1]);
   }
-  
+
   public function setProxy($proxy_string) {
       $this->_proxy = $proxy_string;
       self::$_proxyStatic = $proxy_string;
@@ -44,7 +44,7 @@ class MentionClient {
     if($this->c('supportsPingback', $target) === null) {
       $this->c('supportsPingback', $target, false);
 
-      // First try a HEAD request and look for X-Pingback header 
+      // First try a HEAD request and look for X-Pingback header
       if(!$this->c('headers', $target)) {
         $this->c('headers', $target, $this->_fetchHead($target));
       }
@@ -71,8 +71,8 @@ class MentionClient {
 
     return $this->c('supportsPingback', $target);
   }
-  
-  public static function sendPingback($endpoint, $source, $target) {    
+
+  public static function sendPingback($endpoint, $source, $target) {
     $payload = xmlrpc_encode_request('pingback.ping', array($source,  $target));
 
     $response = static::_post($endpoint, $payload, array(
@@ -81,7 +81,7 @@ class MentionClient {
 
     if(is_array(xmlrpc_decode($response))):
         return false;
-    elseif(is_string($response) && !empty($response)): 
+    elseif(is_string($response) && !empty($response)):
         return true;
     endif;
   }
@@ -130,15 +130,15 @@ class MentionClient {
     if($this->c('supportsWebmention', $target) === null) {
       $this->c('supportsWebmention', $target, false);
 
-      // First try a HEAD request and look for Link header 
+      // First try a HEAD request and look for Link header
       if(!$this->c('headers', $target)) {
         $this->c('headers', $target, $this->_fetchHead($target));
       }
 
       $headers = $this->c('headers', $target);
-      
+
       $link_header = false;
-      
+
       if(array_key_exists('Link', $headers)) {
         if(is_array($headers['Link'])) {
           $link_header = implode($headers['Link'], ", ");
@@ -167,9 +167,9 @@ class MentionClient {
 
     return $this->c('supportsWebmention', $target);
   }
-  
+
   public static function sendWebmention($endpoint, $source, $target) {
-    
+
     $payload = http_build_query(array(
       'source' => $source,
       'target' => $target
@@ -185,7 +185,7 @@ class MentionClient {
   }
 
   public function sendWebmentionPayload($target) {
-    
+
     $this->_debug("Sending webmention now!");
 
     $webmentionServer = $this->c('webmentionServer', $target);
@@ -214,7 +214,7 @@ class MentionClient {
     if($this->supportsWebmention($target)) {
       $accepted = $this->sendWebmentionPayload($target);
     // Only look for a pingback server if we didn't find a webmention server
-    } else 
+    } else
     if($this->supportsPingback($target)) {
       $accepted = $this->sendPingbackPayload($target);
     }
@@ -230,7 +230,7 @@ class MentionClient {
     self::enableDebug($enabled);
   }
   public static function enableDebug($enabled) {
-    self::$_debugStatic = $enabled;    
+    self::$_debugStatic = $enabled;
   }
   private function _debug($msg) {
     if($this->_debugging)
@@ -267,7 +267,9 @@ class MentionClient {
     $fields = explode("\r\n", preg_replace('/\x0D\x0A[\x09\x20]+/', ' ', $headers));
     foreach($fields as $field) {
       if(preg_match('/([^:]+): (.+)/m', $field, $match)) {
-        $match[1] = preg_replace('/(?<=^|[\x09\x20\x2D])./e', 'strtoupper("\0")', strtolower(trim($match[1])));
+        $match[1] = preg_replace_callback('/(?<=^|[\x09\x20\x2D])./', function($m) {
+          return strtoupper($m[0]);
+        }, strtolower(trim($match[1])));
         // If there's already a value set for the header name being returned, turn it into an array and add the new value
         $match[1] = preg_replace_callback('/(?<=^|[\x09\x20\x2D])./', function($m) {
           return strtoupper($m[0]);
@@ -333,7 +335,7 @@ if (!function_exists('xmlrpc_encode_request')) {
       $xml .= '<param><value><string>'.htmlspecialchars($param).'</string></value></param>';
     }
     $xml .= '</params></methodCall>';
-    
+
     return $xml;
   }
 }
