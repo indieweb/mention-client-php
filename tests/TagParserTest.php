@@ -19,6 +19,24 @@ class TagParserTest extends PHPUnit_Framework_TestCase {
     $this->assertEquals('http://example.com/webmention', $endpoint);
   }
 
+  public function testFindWebmentionATagRelSpaceBeforeWebmentionHref() {
+    $html = '<a rel="pings webmention" href="http://example.com/webmention">this site supports webmention</a>';
+    $endpoint = $this->client->_findWebmentionEndpointInHTML($html);
+    $this->assertEquals('http://example.com/webmention', $endpoint);
+  }
+
+  public function testFindWebmentionATagRelSpaceAfterWebmentionHref() {
+    $html = '<a rel="webmention pings" href="http://example.com/webmention">this site supports webmention</a>';
+    $endpoint = $this->client->_findWebmentionEndpointInHTML($html);
+    $this->assertEquals('http://example.com/webmention', $endpoint);
+  }
+
+  public function testFindWebmentionLinkTagRelSpaceAroundWebmentionHref() {
+    $html = '<link rel="beeboop webmention pings" href="http://example.com/webmention" />';
+    $endpoint = $this->client->_findWebmentionEndpointInHTML($html);
+    $this->assertEquals('http://example.com/webmention', $endpoint);
+  }
+
   public function testFindWebmentionTagHrefRelWebmention() {
     $html = '<link href="http://example.com/webmention" rel="webmention" />';
     $endpoint = $this->client->_findWebmentionEndpointInHTML($html);
