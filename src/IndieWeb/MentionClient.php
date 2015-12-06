@@ -27,7 +27,7 @@ class MentionClient {
     if($sourceBody)
       $this->_sourceBody = $sourceBody;
     else
-      $this->_sourceBody = static::_get($sourceURL);
+      $this->_sourceBody = static::_get($sourceURL)['body'];
 
     // Find all external links in the source
     preg_match_all("/<a[^>]+href=.(https?:\/\/[^'\"]+)/i", $this->_sourceBody, $matches);
@@ -79,9 +79,9 @@ class MentionClient {
       'Content-type: application/xml'
     ));
 
-    if(is_array(xmlrpc_decode($response))):
+    if(is_array(xmlrpc_decode($response['body']))):
         return false;
-    elseif(is_string($response) && !empty($response)):
+    elseif(is_string($response['body']) && !empty($response['body'])):
         return true;
     endif;
   }
@@ -178,10 +178,10 @@ class MentionClient {
     $response = static::_post($endpoint, $payload, array(
       'Content-type: application/x-www-form-urlencoded',
       'Accept: application/json'
-    ), true);
+    ));
 
     // Return true if the remote endpoint accepted it
-    return in_array($response, array(200,202));
+    return in_array($response['code'], array(200,202));
   }
 
   public function sendWebmentionPayload($target) {
@@ -265,23 +265,33 @@ class MentionClient {
   private static function _get($url) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HEADER, true);
     if (self::$_proxyStatic) curl_setopt($ch, CURLOPT_PROXY, self::$_proxyStatic);
-    return curl_exec($ch);
+    $response = curl_exec($ch);
+    $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+    return [
+      'status' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
+      'headers' => trim(substr($response, 0, $header_size)),
+      'body' => substr($response, $header_size)
+    ];
   }
 
-  private static function _post($url, $body, $headers=array(), $returnHTTPCode=false) {
+  private static function _post($url, $body, $headers=array()) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_HEADER, true);
     if (self::$_proxyStatic) curl_setopt($ch, CURLOPT_PROXY, self::$_proxyStatic);
     $response = curl_exec($ch);
     self::_debug_($response);
-    if($returnHTTPCode)
-      return curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    else
-      return $response;
+    $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+    return [
+      'status' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
+      'headers' => trim(substr($response, 0, $header_size)),
+      'body' => substr($response, $header_size)
+    ];
   }
 
   protected function _parse_headers($headers) {
