@@ -20,22 +20,9 @@ class MentionClient {
   private $_proxy = false;
   private static $_proxyStatic = false;
 
-  public function __construct($sourceURL, $sourceBody=false, $proxyString=false) {
-    $this->setProxy($proxyString);
-    $this->_sourceURL = $sourceURL;
-    if($sourceBody)
-      $this->_sourceBody = $sourceBody;
-    else
-      $this->_sourceBody = static::_get($sourceURL)['body'];
-
-    // Find all external links in the source
-    preg_match_all("/<a[^>]+href=.(https?:\/\/[^'\"]+)/i", $this->_sourceBody, $matches);
-    $this->_links = array_unique($matches[1]);
-  }
-
   public function setProxy($proxy_string) {
-      $this->_proxy = $proxy_string;
-      self::$_proxyStatic = $proxy_string;
+    $this->_proxy = $proxy_string;
+    self::$_proxyStatic = $proxy_string;
   }
 
   public function supportsPingback($target) {
@@ -71,18 +58,17 @@ class MentionClient {
     return $this->c('supportsPingback', $target);
   }
 
-  public static function sendPingback($endpoint, $source, $target) {
+  public static function sendPingbackToEndpoint($endpoint, $source, $target) {
     $payload = xmlrpc_encode_request('pingback.ping', array($source,  $target));
 
     $response = static::_post($endpoint, $payload, array(
       'Content-type: application/xml'
     ));
 
-    if(is_array(xmlrpc_decode($response['body']))):
-        return false;
-    elseif(is_string($response['body']) && !empty($response['body'])):
-        return true;
-    endif;
+    if(is_array(xmlrpc_decode($response['body'])))
+      return false;
+    elseif(is_string($response['body']) && !empty($response['body']))
+      return true;
   }
 
   public function sendPingbackPayload($target) {
@@ -91,7 +77,7 @@ class MentionClient {
     $pingbackServer = $this->c('pingbackServer', $target);
     self::_debug("Sending to pingback server: " . $pingbackServer);
 
-    return self::sendPingback($pingbackServer, $this->_sourceURL, $target);
+    return self::sendPingbackToEndpoint($pingbackServer, $this->_sourceURL, $target);
   }
 
   protected function _findWebmentionEndpointInHTML($body, $targetURL=false) {
@@ -167,20 +153,17 @@ class MentionClient {
     return $this->c('supportsWebmention', $target);
   }
 
-  public static function sendWebmention($endpoint, $source, $target) {
+  public static function sendWebmentionToEndpoint($endpoint, $source, $target, $additional=array()) {
 
-    $payload = http_build_query(array(
+    $payload = http_build_query(array_merge(array(
       'source' => $source,
       'target' => $target
-    ));
+    ), $additional));
 
-    $response = static::_post($endpoint, $payload, array(
+    return static::_post($endpoint, $payload, array(
       'Content-type: application/x-www-form-urlencoded',
       'Accept: application/json'
     ));
-
-    // Return true if the remote endpoint accepted it
-    return in_array($response['code'], array(200,202));
   }
 
   public function sendWebmentionPayload($target) {
@@ -190,7 +173,66 @@ class MentionClient {
     $webmentionServer = $this->c('webmentionServer', $target);
     self::_debug("Sending to webmention server: " . $webmentionServer);
 
-    return self::sendWebmention($webmentionServer, $this->_sourceURL, $target);
+    return self::sendWebmentionToEndpoint($webmentionServer, $this->_sourceURL, $target);
+  }
+
+  public static function findOutgoingLinks($input) {
+    // Find all outgoing links in the source
+    if(is_string($input)) {
+      preg_match_all("/<a[^>]+href=.(https?:\/\/[^'\"]+)/i", $input, $matches);
+      return array_unique($matches[1]);
+    } elseif(is_array($input) && array_key_exists('items', $input)) {
+      $links = array();
+
+      // Find links in the content HTML
+      $item = $input['items'][0];
+
+      if(array_key_exists('content', $item['properties'])) {
+        if(is_array($item['properties']['content'][0])) {
+          $html = $item['properties']['content'][0]['html'];
+          $links = array_merge($links, self::findOutgoingLinks($html));
+        } else {
+          $text = $item['properties']['content'][0];
+          $links = array_merge($links, self::findLinksInText($text));
+        }
+      }
+
+      // Look at all properties of the item and collect all the ones that look like URLs
+      $links = array_merge($links, self::findLinksInJSON($item));
+
+      return array_unique($links);
+    } else {
+      return array();
+    }
+  }
+
+  public static function findLinksInText($input) {
+    preg_match_all('/https?:\/\/[^ ]+/', $input, $matches);
+    return array_unique($matches[0]);
+  }
+
+  public static function findLinksInJSON($input) {
+    $links = array();
+    // This recursively iterates over the whole input array and searches for
+    // everything that looks like a URL regardless of its depth or property name
+    foreach(new \RecursiveIteratorIterator(new \RecursiveArrayIterator($input)) as $key => $value) {
+      if(substr($value, 0, 7) == 'http://' || substr($value, 0, 8) == 'https://')
+        $links[] = $value;
+    }
+    return $links;
+  }
+
+  public function sendMentions($sourceURL, $sourceBody=false) {
+    $this->_sourceURL = $sourceURL;
+    if($sourceBody)
+      $this->_sourceBody = $sourceBody;
+    else
+      $this->_sourceBody = static::_get($sourceURL)['body'];
+
+    $parsed = Mf2\parse($this->_sourceBody, $sourceURL);
+    $this->_links = self::findOutgoingLinks($parsed);
+
+    
   }
 
   public function sendSupportedMentions($target=false) {
