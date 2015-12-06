@@ -3,8 +3,7 @@ namespace IndieWeb;
 
 class MentionClient {
 
-  private $_debugging = false;
-  private static $_debugStatic = false;
+  private static $_debugEnabled = false;
 
   private $_sourceURL;
   private $_sourceBody;
@@ -46,18 +45,18 @@ class MentionClient {
 
       // First try a HEAD request and look for X-Pingback header
       if(!$this->c('headers', $target)) {
-        $this->c('headers', $target, $this->_fetchHead($target));
+        $this->c('headers', $target, static::_head($target)['headers']);
       }
 
       $headers = $this->c('headers', $target);
       if(array_key_exists('X-Pingback', $headers)) {
-        $this->_debug("Found pingback server in header");
+        self::_debug("Found pingback server in header");
         $this->c('pingbackServer', $target, $headers['X-Pingback']);
         $this->c('supportsPingback', $target, true);
       } else {
-        $this->_debug("No pingback server found in header, looking in the body now");
+        self::_debug("No pingback server found in header, looking in the body now");
         if(!$this->c('body', $target)) {
-          $this->c('body', $target, $this->_fetchBody($target));
+          $this->c('body', $target, static::_get($target)['body']);
         }
         $body = $this->c('body', $target);
         if(preg_match("/<link rel=\"pingback\" href=\"([^\"]+)\" ?\/?>/i", $body, $match)) {
@@ -66,7 +65,7 @@ class MentionClient {
         }
       }
 
-      $this->_debug("pingback server: " . $this->c('pingbackServer', $target));
+      self::_debug("pingback server: " . $this->c('pingbackServer', $target));
     }
 
     return $this->c('supportsPingback', $target);
@@ -87,10 +86,10 @@ class MentionClient {
   }
 
   public function sendPingbackPayload($target) {
-    self::_debug_("Sending pingback now!");
+    self::_debug("Sending pingback now!");
 
     $pingbackServer = $this->c('pingbackServer', $target);
-    $this->_debug("Sending to pingback server: " . $pingbackServer);
+    self::_debug("Sending to pingback server: " . $pingbackServer);
 
     return self::sendPingback($pingbackServer, $this->_sourceURL, $target);
   }
@@ -132,7 +131,7 @@ class MentionClient {
 
       // First try a HEAD request and look for Link header
       if(!$this->c('headers', $target)) {
-        $this->c('headers', $target, $this->_fetchHead($target));
+        $this->c('headers', $target, static::_head($target)['headers']);
       }
 
       $headers = $this->c('headers', $target);
@@ -148,13 +147,13 @@ class MentionClient {
       }
 
       if($link_header && ($endpoint=$this->_findWebmentionEndpointInHeader($link_header, $target))) {
-        $this->_debug("Found webmention server in header");
+        self::_debug("Found webmention server in header");
         $this->c('webmentionServer', $target, $endpoint);
         $this->c('supportsWebmention', $target, true);
       } else {
-        $this->_debug("No webmention server found in header, looking in the body now");
+        self::_debug("No webmention server found in header, looking in the body now");
         if(!$this->c('body', $target)) {
-          $this->c('body', $target, $this->_fetchBody($target));
+          $this->c('body', $target, static::_get($target)['body']);
         }
         if($endpoint=$this->_findWebmentionEndpointInHTML($this->c('body', $target), $target)) {
           $this->c('webmentionServer', $target, $endpoint);
@@ -162,7 +161,7 @@ class MentionClient {
         }
       }
 
-      $this->_debug("webmention server: " . $this->c('webmentionServer', $target));
+      self::_debug("webmention server: " . $this->c('webmentionServer', $target));
     }
 
     return $this->c('supportsWebmention', $target);
@@ -186,10 +185,10 @@ class MentionClient {
 
   public function sendWebmentionPayload($target) {
 
-    $this->_debug("Sending webmention now!");
+    self::_debug("Sending webmention now!");
 
     $webmentionServer = $this->c('webmentionServer', $target);
-    $this->_debug("Sending to webmention server: " . $webmentionServer);
+    self::_debug("Sending to webmention server: " . $webmentionServer);
 
     return self::sendWebmention($webmentionServer, $this->_sourceURL, $target);
   }
@@ -200,9 +199,9 @@ class MentionClient {
       $totalAccepted = 0;
 
       foreach($this->_links as $link) {
-        $this->_debug("Checking $link");
+        self::_debug("Checking $link");
         $totalAccepted += $this->sendSupportedMentions($link);
-        $this->_debug('');
+        self::_debug('');
       }
 
       return $totalAccepted;
@@ -225,44 +224,28 @@ class MentionClient {
       return 0;
   }
 
-  public function debug($enabled) {
-    $this->_debugging = $enabled;
-    self::enableDebug($enabled);
+  public static function enableDebug() {
+    self::$_debugEnabled = true;
   }
-  public static function enableDebug($enabled) {
-    self::$_debugStatic = $enabled;
-  }
-  private function _debug($msg) {
-    if($this->_debugging)
-      echo "\t" . $msg . "\n";
-  }
-  private static function _debug_($msg) {
-    if(self::$_debugStatic)
+  private static function _debug($msg) {
+    if(self::$_debugEnabled)
       echo "\t" . $msg . "\n";
   }
 
-  protected function _fetchHead($url) {
-    $this->_debug("Fetching headers...");
+  protected static function _head($url) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_HEADER, true);
     curl_setopt($ch, CURLOPT_NOBODY, true);
-    if ($this->_proxy) curl_setopt($ch, CURLOPT_PROXY, $this->_proxy);
+    if (self::$_proxyStatic) curl_setopt($ch, CURLOPT_PROXY, self::$_proxyStatic);
     $response = curl_exec($ch);
-    return self::_parse_headers($response);
+    return [
+      'status' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
+      'headers' => self::_parse_headers(trim($response)),
+    ];
   }
 
-  protected function _fetchBody($url) {
-    $this->_debug("Fetching body...");
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    if ($this->_proxy) curl_setopt($ch, CURLOPT_PROXY, $this->_proxy);
-    return curl_exec($ch);
-  }
-
-  private static function _get($url) {
+  protected static function _get($url) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HEADER, true);
@@ -276,7 +259,7 @@ class MentionClient {
     ];
   }
 
-  private static function _post($url, $body, $headers=array()) {
+  protected static function _post($url, $body, $headers=array()) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
@@ -285,7 +268,7 @@ class MentionClient {
     curl_setopt($ch, CURLOPT_HEADER, true);
     if (self::$_proxyStatic) curl_setopt($ch, CURLOPT_PROXY, self::$_proxyStatic);
     $response = curl_exec($ch);
-    self::_debug_($response);
+    self::_debug($response);
     $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
     return [
       'status' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
