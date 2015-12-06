@@ -10,14 +10,13 @@ Usage
 
 ### Basic Usage
 
-Given one of your source URLs, this function will find external links on the page,
+Given one of your source URLs, this function will find links on the page,
 discover the webmention and pingback endpoints for each, and send mentions for any
 it discovers.
 
 ```php
 <?php
 $client = new IndieWeb\MentionClient();
-$client->debug(true);
 $sent = $client->sendMentions($sourceURL);
 
 echo "Sent $sent mentions\n";
@@ -41,7 +40,6 @@ looking for the microformats object.
 ```php
 <?php
 $client = new IndieWeb\MentionClient();
-$client->debug(true);
 $sent = $client->sendMentions($sourceURL, $sourceHTML);
 
 echo "Sent $sent mentions\n";
@@ -56,7 +54,6 @@ if found, otherwise it will return false.
 ```php
 <?php
 $client = new IndieWeb\MentionClient();
-$client->debug(true);
 $endpoint = $client->discoverWebmentionEndpoint($targetURL);
 $endpoint = $client->discoverPingbackEndpoint($targetURL);
 ?>
@@ -72,8 +69,6 @@ other properties in the payload.
 ```php
 <?php
 $client = new IndieWeb\MentionClient();
-$client->debug(true);
-
 $response = $client->sendWebmention($sourceURL, $targetURL);
 $response = $client->sendWebmention($sourceURL, $targetURL, ['vouch'=>$vouch]);
 ?>
@@ -88,8 +83,6 @@ See the function below for an example of the response when the webmention is suc
 ```php
 <?php
 $client = new IndieWeb\MentionClient();
-$client->debug(true);
-
 $response = $client->sendPingback($sourceURL, $targetURL);
 ?>
 ```
@@ -121,6 +114,37 @@ The response is an array containing the HTTP status code, HTTP headers, and the 
 ```
 
 You can check if the webmention was accepted by testing if the response code is 200 or 202.
+
+
+### Finding target URLs in a source document
+
+If you have a rendered HTML page (or partial HTML page), you can use this function to
+return a list of external URLs found on the page.
+
+```php
+<?php
+$client = new IndieWeb\MentionClient();
+$urls = $client->findExternalURLs($html);
+?>
+```
+
+All links found will be returned an array, with duplicate URLs removed. If no links
+are found, it will return an empty array.
+
+```json
+[
+  "http://example.com/1",
+  "http://example.com/2"
+]
+```
+
+
+### Debugging
+
+If you want to collect debugging information so you can see the steps the library
+is doing, run `IndieWeb\MentionClient::enableDebug();` before calling any other function.
+
+
 
 
 About Webmention
