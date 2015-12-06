@@ -7,6 +7,32 @@ class LinkHeaderParserTest extends PHPUnit_Framework_TestCase {
     $this->client = new IndieWeb\MentionClientTest(false, 'empty');
   }
 
+  public function testParsesMultipleHeadersToArray() {
+    $headers = "HTTP/1.1 200 OK\r
+Link: <http://aaronparecki.com/webmention.php>; rel=\"http://webmention.org/\"\r
+Link: <http://aaronparecki.com/webmention.php>; rel=\"webmention\"\r
+Link: <http://aaronparecki.com/>; rel=\"me\"\r
+";
+
+    $headers = IndieWeb\MentionClientTest::_parse_headers($headers);
+    $this->assertInternalType('array', $headers['Link']);
+  }
+
+  public function testNormalizesHeaderNameCase() {
+    $headers = "HTTP/1.1 200 OK\r
+One-two: three\r
+four-five: six\r
+Seven-Eight: nine\r
+TEN-ELEVEN: twelve\r
+";
+
+    $headers = IndieWeb\MentionClientTest::_parse_headers($headers);
+    $this->assertArrayHasKey('One-Two', $headers);
+    $this->assertArrayHasKey('Four-Five', $headers);
+    $this->assertArrayHasKey('Seven-Eight', $headers);
+    $this->assertArrayHasKey('Ten-Eleven', $headers);
+  }
+
   public function testFindWebmentionLinkHeader() {
   	$headers = "HTTP/1.1 200 OK\r
 Server: nginx/1.0.14\r
@@ -21,7 +47,7 @@ Link: <http://aaronparecki.com/>; rel=\"me\"\r
 ";
 
     $target = 'http://aaronparecki.com/';
-    $this->client->c('headers', $target, $this->client->_parse_headers($headers));
+    $this->client->c('headers', $target, IndieWeb\MentionClientTest::_parse_headers($headers));
     $supports = $this->client->supportsWebmention($target);
     $this->assertEquals(true, $supports);
   }
@@ -50,7 +76,7 @@ Link: <http://pubsubhubbub.appspot.com>; rel=\"hub\", <http://pubsubhubbub.super
     ";
 
     $target = 'http://aaronparecki.com/';
-    $this->client->c('headers', $target, $this->client->_parse_headers($headers));
+    $this->client->c('headers', $target, IndieWeb\MentionClientTest::_parse_headers($headers));
     $supports = $this->client->supportsWebmention($target);
     $this->assertEquals(true, $supports);
   }

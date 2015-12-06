@@ -250,7 +250,7 @@ class MentionClient {
     curl_setopt($ch, CURLOPT_NOBODY, true);
     if ($this->_proxy) curl_setopt($ch, CURLOPT_PROXY, $this->_proxy);
     $response = curl_exec($ch);
-    return $this->_parse_headers($response);
+    return self::_parse_headers($response);
   }
 
   protected function _fetchBody($url) {
@@ -271,7 +271,7 @@ class MentionClient {
     $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
     return [
       'status' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
-      'headers' => trim(substr($response, 0, $header_size)),
+      'headers' => self::_parse_headers(trim(substr($response, 0, $header_size))),
       'body' => substr($response, $header_size)
     ];
   }
@@ -289,12 +289,12 @@ class MentionClient {
     $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
     return [
       'status' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
-      'headers' => trim(substr($response, 0, $header_size)),
+      'headers' => self::_parse_headers(trim(substr($response, 0, $header_size))),
       'body' => substr($response, $header_size)
     ];
   }
 
-  protected function _parse_headers($headers) {
+  protected static function _parse_headers($headers) {
     $retVal = array();
     $fields = explode("\r\n", preg_replace('/\x0D\x0A[\x09\x20]+/', ' ', $headers));
     foreach($fields as $field) {
