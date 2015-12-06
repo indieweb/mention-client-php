@@ -94,10 +94,8 @@ You can pass additional properties for the webmention request in an array if nee
 
 ```php
 <?php
-$response = IndieWeb\MentionClient::sendWebmention($endpoint, $source, $target);
-$response = IndieWeb\MentionClient::sendWebmention($endpoint, $source, $target, ['vouch'=>$vouch]);
-
-$response = IndieWeb\MentionClient::sendPingback($endpoint, $source, $target);
+$response = IndieWeb\MentionClient::sendWebmentionToEndpoint($endpoint, $source, $target);
+$response = IndieWeb\MentionClient::sendWebmentionToEndpoint($endpoint, $source, $target, ['vouch'=>$vouch]);
 ?>
 ```
 
@@ -107,7 +105,7 @@ The response is an array containing the HTTP status code, HTTP headers, and the 
 {
   "code": 202,
   "headers": {
-    "Content-type: text/plain"
+    "Content-Type: text/plain"
   },
   "body": "Webmention is processing"
 }
@@ -115,16 +113,25 @@ The response is an array containing the HTTP status code, HTTP headers, and the 
 
 You can check if the webmention was accepted by testing if the response code is 200 or 202.
 
+```php
+<?php
+$success = IndieWeb\MentionClient::sendPingbackToEndpoint($endpoint, $source, $target);
+?>
+```
+
+The pingback function returns true or false depending on whether the pingback was successfully sent.
+
+
 
 ### Finding target URLs in a source document
 
 If you have a rendered HTML page (or partial HTML page), you can use this function to
-return a list of external URLs found on the page.
+return a list of outgoing links found on the page.
 
 ```php
 <?php
 $client = new IndieWeb\MentionClient();
-$urls = $client->findExternalURLs($html);
+$urls = $client->findOutgoingLinks($html);
 ?>
 ```
 
