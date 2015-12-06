@@ -12,4 +12,10 @@ class MentionClientTest extends MentionClient {
     return $method->invokeArgs($this, $args);
   }
 
+  public static function __callStatic($method, $args) {
+    $method = new \ReflectionMethod('IndieWeb\MentionClient', $method);
+    $method->setAccessible(true);
+    return $method->invokeArgs(null, $args);
+  }
+
 }
