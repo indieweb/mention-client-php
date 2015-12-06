@@ -4,7 +4,7 @@ class LinkHeaderParserTest extends PHPUnit_Framework_TestCase {
   public $client;
 
   public function setUp() {
-    $this->client = new IndieWeb\MentionClient(false, 'empty');
+    $this->client = new IndieWeb\MentionClientTest(false, 'empty');
   }
 
   public function testFindWebmentionLinkHeader() {
@@ -19,7 +19,7 @@ Link: <http://aaronparecki.com/webmention.php>; rel=\"http://webmention.org/\"\r
 Link: <http://aaronparecki.com/webmention.php>; rel=\"webmention\"\r
 Link: <http://aaronparecki.com/>; rel=\"me\"\r
 ";
-	
+
     $target = 'http://aaronparecki.com/';
     $this->client->c('headers', $target, $this->client->_parse_headers($headers));
     $supports = $this->client->supportsWebmention($target);

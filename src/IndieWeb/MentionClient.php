@@ -95,7 +95,7 @@ class MentionClient {
     return self::sendPingback($pingbackServer, $this->_sourceURL, $target);
   }
 
-  public function _findWebmentionEndpointInHTML($body, $targetURL=false) {
+  protected function _findWebmentionEndpointInHTML($body, $targetURL=false) {
     $endpoint = false;
     if(preg_match('/<(?:link|a)[ ]+href="([^"]+)"[ ]+rel="[^" ]* ?webmention ?[^" ]*"[ ]*\/?>/i', $body, $match)
         || preg_match('/<(?:link|a)[ ]+rel="[^" ]* ?webmention ?[^" ]*"[ ]+href="([^"]+)"[ ]*\/?>/i', $body, $match)) {
@@ -111,7 +111,7 @@ class MentionClient {
     return $endpoint;
   }
 
-  public function _findWebmentionEndpointInHeader($link_header, $targetURL=false) {
+  protected function _findWebmentionEndpointInHeader($link_header, $targetURL=false) {
     $endpoint = false;
     if(preg_match('~<((?:https?://)?[^>]+)>; rel="webmention"~', $link_header, $match)) {
       $endpoint = $match[1];
@@ -262,7 +262,7 @@ class MentionClient {
     return curl_exec($ch);
   }
 
-  public function _parse_headers($headers) {
+  protected function _parse_headers($headers) {
     $retVal = array();
     $fields = explode("\r\n", preg_replace('/\x0D\x0A[\x09\x20]+/', ' ', $headers));
     foreach($fields as $field) {

@@ -4,7 +4,7 @@ class TagParserTest extends PHPUnit_Framework_TestCase {
   public $client;
 
   public function setUp() {
-    $this->client = new IndieWeb\MentionClient(false, 'empty');
+    $this->client = new IndieWeb\MentionClientTest(false, 'empty');
   }
 
   public function testFindWebmentionTagRelWebmentionHref() {
@@ -92,4 +92,3 @@ class TagParserTest extends PHPUnit_Framework_TestCase {
   }
 
 }
-
