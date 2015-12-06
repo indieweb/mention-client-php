@@ -262,6 +262,28 @@ class MentionClient {
     return curl_exec($ch);
   }
 
+  private static function _get($url) {
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    if (self::$_proxyStatic) curl_setopt($ch, CURLOPT_PROXY, self::$_proxyStatic);
+    return curl_exec($ch);
+  }
+
+  private static function _post($url, $body, $headers=array(), $returnHTTPCode=false) {
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    if (self::$_proxyStatic) curl_setopt($ch, CURLOPT_PROXY, self::$_proxyStatic);
+    $response = curl_exec($ch);
+    self::_debug_($response);
+    if($returnHTTPCode)
+      return curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    else
+      return $response;
+  }
+
   protected function _parse_headers($headers) {
     $retVal = array();
     $fields = explode("\r\n", preg_replace('/\x0D\x0A[\x09\x20]+/', ' ', $headers));
@@ -284,28 +306,6 @@ class MentionClient {
       }
     }
     return $retVal;
-  }
-
-  private static function _get($url) {
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    if (self::$_proxyStatic) curl_setopt($ch, CURLOPT_PROXY, self::$_proxyStatic);
-    return curl_exec($ch);
-  }
-
-  private static function _post($url, $body, $headers=array(), $returnHTTPCode=false) {
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    if (self::$_proxyStatic) curl_setopt($ch, CURLOPT_PROXY, self::$_proxyStatic);
-    $response = curl_exec($ch);
-    self::_debug_($response);
-    if($returnHTTPCode)
-      return curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    else
-      return $response;
   }
 
   public function c($type, $url, $val=null) {
