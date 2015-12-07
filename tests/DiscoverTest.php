@@ -17,6 +17,10 @@ Link: <http://aaronparecki.com/>; rel=\"me\"\r
     $this->client->c('headers', $target, IndieWeb\MentionClientTest::_parse_headers($headers));
     $endpoint = $this->client->discoverWebmentionEndpoint($target);
     $this->assertEquals('http://aaronparecki.com/webmention.php', $endpoint);
+
+    $target = 'http://pin13.net/mention-client-php/target.php';
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals('http://pin13.net/mention-client-php/webmention.php', $endpoint);
   }
 
   public function testSupportsPingback() {

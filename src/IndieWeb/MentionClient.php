@@ -95,9 +95,9 @@ class MentionClient {
         || preg_match('/<(?:link|a)[ ]+rel="http:\/\/webmention\.org\/?"[ ]+href="([^"]+)"[ ]*\/?>/i', $body, $match)) {
       $endpoint = $match[1];
     }
-    if($endpoint && $targetURL && function_exists('\mf2\resolveUrl')) {
+    if($endpoint && $targetURL && function_exists('\Mf2\resolveUrl')) {
       // Resolve the URL if it's relative
-      $endpoint = \mf2\resolveUrl($targetURL, $endpoint);
+      $endpoint = \Mf2\resolveUrl($targetURL, $endpoint);
     }
     return $endpoint;
   }
@@ -109,9 +109,9 @@ class MentionClient {
     } elseif(preg_match('~<((?:https?://)?[^>]+)>; rel="http://webmention.org/?"~', $link_header, $match)) {
       $endpoint = $match[1];
     }
-    if($endpoint && $targetURL && function_exists('\mf2\resolveUrl')) {
+    if($endpoint && $targetURL && function_exists('\Mf2\resolveUrl')) {
       // Resolve the URL if it's relative
-      $endpoint = \mf2\resolveUrl($targetURL, $endpoint);
+      $endpoint = \Mf2\resolveUrl($targetURL, $endpoint);
     }
     return $endpoint;
   }
@@ -195,7 +195,7 @@ class MentionClient {
     if(is_string($input)) {
       preg_match_all("/<a[^>]+href=.(https?:\/\/[^'\"]+)/i", $input, $matches);
       return array_unique($matches[1]);
-    } elseif(is_array($input) && array_key_exists('items', $input)) {
+    } elseif(is_array($input) && array_key_exists('items', $input) && array_key_exists(0, $input['items'])) {
       $links = array();
 
       // Find links in the content HTML
@@ -242,7 +242,7 @@ class MentionClient {
       $this->_links = self::findOutgoingLinks($sourceBody);
     } else {
       $this->_sourceBody = static::_get($sourceURL)['body'];
-      $parsed = Mf2\parse($this->_sourceBody, $sourceURL);
+      $parsed = \Mf2\parse($this->_sourceBody, $sourceURL);
       $this->_links = self::findOutgoingLinks($parsed);
     }
 
@@ -257,17 +257,17 @@ class MentionClient {
     return $totalAccepted;
   }
 
-  public function sendFirstSupportedMention($target) {
+  public function sendFirstSupportedMention($source, $target) {
 
     $accepted = false;
 
     // Look for a webmention endpoint first
-    if($this->supportsWebmention($target)) {
-      $accepted = $this->sendWebmentionPayload($target);
+    if($this->discoverWebmentionEndpoint($target)) {
+      $accepted = $this->sendWebmention($source, $target);
     // Only look for a pingback server if we didn't find a webmention server
     } else
-    if($this->supportsPingback($target)) {
-      $accepted = $this->sendPingbackPayload($target);
+    if($this->discoverPingbackEndpoint($target)) {
+      $accepted = $this->sendPingback($source, $target);
     }
 
     if($accepted)
