@@ -91,4 +91,10 @@ class TagParserTest extends PHPUnit_Framework_TestCase {
     $this->assertEquals('http://example.com/webmention', $endpoint);
   }
 
+  public function testFindWebmentionTagMultipleRels() {
+    $html = '<link href="/webmention" rel="webmention http://webmention.org">';
+    $endpoint = $this->client->_findWebmentionEndpointInHTML($html, 'http://example.com/post/1');
+    $this->assertEquals('http://example.com/webmention', $endpoint);
+  }
+
 }

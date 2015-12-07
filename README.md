@@ -77,6 +77,18 @@ $response = $client->sendWebmention($sourceURL, $targetURL, ['vouch'=>$vouch]);
 If no webmention endpoint was found at the target, the function will return false.
 See the function below for an example of the response when the webmention is successful.
 
+You can also check if the endpoint advertises a webmention endpoint before trying
+to send one:
+
+```php
+<?php
+$client = new IndieWeb\MentionClient();
+$supportsWebmention = $client->discoverWebmentionEndpoint($targetURL);
+if($supportsWebmention) {
+  $client->sendWebmention($sourceURL, $targetURL);
+}
+?>
+```
 
 ### Sending a Pingback
 
@@ -84,6 +96,19 @@ See the function below for an example of the response when the webmention is suc
 <?php
 $client = new IndieWeb\MentionClient();
 $response = $client->sendPingback($sourceURL, $targetURL);
+?>
+```
+
+You can also check if the endpoint advertises a pingback endpoint before trying
+to send one:
+
+```php
+<?php
+$client = new IndieWeb\MentionClient();
+$supportsPingback = $client->discoverPingbackEndpoint($targetURL);
+if($supportsPingback) {
+  $client->sendPingback($sourceURL, $targetURL);
+}
 ?>
 ```
 

@@ -5,7 +5,6 @@ class MentionClient {
 
   private static $_debugEnabled = false;
 
-  private $_sourceURL;
   private $_sourceBody;
 
   private $_links = array();
@@ -17,15 +16,13 @@ class MentionClient {
   private $_pingbackServer = array();
   private $_webmentionServer = array();
 
-  private $_proxy = false;
-  private static $_proxyStatic = false;
+  private static $_proxy = false;
 
   public function setProxy($proxy_string) {
-    $this->_proxy = $proxy_string;
-    self::$_proxyStatic = $proxy_string;
+    self::$_proxy = $proxy_string;
   }
 
-  public function supportsPingback($target) {
+  public function discoverPingbackEndpoint($target) {
 
     if($this->c('supportsPingback', $target) === null) {
       $this->c('supportsPingback', $target, false);
@@ -55,10 +52,12 @@ class MentionClient {
       self::_debug("pingback server: " . $this->c('pingbackServer', $target));
     }
 
-    return $this->c('supportsPingback', $target);
+    return $this->c('pingbackServer', $target);
   }
 
   public static function sendPingbackToEndpoint($endpoint, $source, $target) {
+    self::_debug("Sending pingback now!");
+
     $payload = xmlrpc_encode_request('pingback.ping', array($source,  $target));
 
     $response = static::_post($endpoint, $payload, array(
@@ -71,13 +70,20 @@ class MentionClient {
       return true;
   }
 
-  public function sendPingbackPayload($target) {
-    self::_debug("Sending pingback now!");
+  public function sendPingback($sourceURL, $targetURL) {
 
-    $pingbackServer = $this->c('pingbackServer', $target);
-    self::_debug("Sending to pingback server: " . $pingbackServer);
+    // If we haven't discovered the pingback endpoint yet, do it now
+    if($this->c('supportsPingback', $targetURL) === null) {
+      $this->discoverPingbackEndpoint($targetURL);
+    }
 
-    return self::sendPingbackToEndpoint($pingbackServer, $this->_sourceURL, $target);
+    $pingbackServer = $this->c('pingbackServer', $targetURL);
+    if($pingbackServer) {
+      self::_debug("Sending to pingback server: " . $pingbackServer);
+      return self::sendPingbackToEndpoint($pingbackServer, $sourceURL, $targetURL);
+    } else {
+      return false;
+    }
   }
 
   protected function _findWebmentionEndpointInHTML($body, $targetURL=false) {
@@ -110,7 +116,7 @@ class MentionClient {
     return $endpoint;
   }
 
-  public function supportsWebmention($target) {
+  public function discoverWebmentionEndpoint($target) {
 
     if($this->c('supportsWebmention', $target) === null) {
       $this->c('supportsWebmention', $target, false);
@@ -150,10 +156,12 @@ class MentionClient {
       self::_debug("webmention server: " . $this->c('webmentionServer', $target));
     }
 
-    return $this->c('supportsWebmention', $target);
+    return $this->c('webmentionServer', $target);
   }
 
   public static function sendWebmentionToEndpoint($endpoint, $source, $target, $additional=array()) {
+
+    self::_debug("Sending webmention now!");
 
     $payload = http_build_query(array_merge(array(
       'source' => $source,
@@ -166,14 +174,20 @@ class MentionClient {
     ));
   }
 
-  public function sendWebmentionPayload($target) {
+  public function sendWebmention($sourceURL, $targetURL, $additional=array()) {
 
-    self::_debug("Sending webmention now!");
+    // If we haven't discovered the webmention endpoint yet, do it now
+    if($this->c('supportsWebmention', $targetURL) === null) {
+      $this->discoverWebmentionEndpoint($targetURL);
+    }
 
-    $webmentionServer = $this->c('webmentionServer', $target);
-    self::_debug("Sending to webmention server: " . $webmentionServer);
-
-    return self::sendWebmentionToEndpoint($webmentionServer, $this->_sourceURL, $target);
+    $webmentionServer = $this->c('webmentionServer', $targetURL);
+    if($webmentionServer) {
+      self::_debug("Sending to webmention server: " . $webmentionServer);
+      return self::sendWebmentionToEndpoint($webmentionServer, $sourceURL, $targetURL, $additional);
+    } else {
+      return false;
+    }
   }
 
   public static function findOutgoingLinks($input) {
@@ -223,31 +237,27 @@ class MentionClient {
   }
 
   public function sendMentions($sourceURL, $sourceBody=false) {
-    $this->_sourceURL = $sourceURL;
-    if($sourceBody)
+    if($sourceBody) {
       $this->_sourceBody = $sourceBody;
-    else
+      $this->_links = self::findOutgoingLinks($sourceBody);
+    } else {
       $this->_sourceBody = static::_get($sourceURL)['body'];
+      $parsed = Mf2\parse($this->_sourceBody, $sourceURL);
+      $this->_links = self::findOutgoingLinks($parsed);
+    }
 
-    $parsed = Mf2\parse($this->_sourceBody, $sourceURL);
-    $this->_links = self::findOutgoingLinks($parsed);
+    $totalAccepted = 0;
 
-    
+    foreach($this->_links as $target) {
+      self::_debug("Checking $target for webmention and pingback endpoints");
+
+      $totalAccepted += $this->sendFirstSupportedMention($sourceURL, $target);
+    }
+
+    return $totalAccepted;
   }
 
-  public function sendSupportedMentions($target=false) {
-
-    if($target == false) {
-      $totalAccepted = 0;
-
-      foreach($this->_links as $link) {
-        self::_debug("Checking $link");
-        $totalAccepted += $this->sendSupportedMentions($link);
-        self::_debug('');
-      }
-
-      return $totalAccepted;
-    }
+  public function sendFirstSupportedMention($target) {
 
     $accepted = false;
 
@@ -279,7 +289,7 @@ class MentionClient {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HEADER, true);
     curl_setopt($ch, CURLOPT_NOBODY, true);
-    if (self::$_proxyStatic) curl_setopt($ch, CURLOPT_PROXY, self::$_proxyStatic);
+    if (self::$_proxy) curl_setopt($ch, CURLOPT_PROXY, self::$_proxy);
     $response = curl_exec($ch);
     return [
       'status' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
@@ -291,7 +301,7 @@ class MentionClient {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HEADER, true);
-    if (self::$_proxyStatic) curl_setopt($ch, CURLOPT_PROXY, self::$_proxyStatic);
+    if (self::$_proxy) curl_setopt($ch, CURLOPT_PROXY, self::$_proxy);
     $response = curl_exec($ch);
     $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
     return [
@@ -308,7 +318,7 @@ class MentionClient {
     curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     curl_setopt($ch, CURLOPT_HEADER, true);
-    if (self::$_proxyStatic) curl_setopt($ch, CURLOPT_PROXY, self::$_proxyStatic);
+    if (self::$_proxy) curl_setopt($ch, CURLOPT_PROXY, self::$_proxy);
     $response = curl_exec($ch);
     self::_debug($response);
     $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);

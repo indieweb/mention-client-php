@@ -46,10 +46,10 @@ Link: <http://aaronparecki.com/webmention.php>; rel=\"webmention\"\r
 Link: <http://aaronparecki.com/>; rel=\"me\"\r
 ";
 
-    $target = 'http://aaronparecki.com/';
+    $target = 'http://example.com/';
     $this->client->c('headers', $target, IndieWeb\MentionClientTest::_parse_headers($headers));
-    $supports = $this->client->supportsWebmention($target);
-    $this->assertEquals(true, $supports);
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals('http://aaronparecki.com/webmention.php', $endpoint);
   }
 
   public function testFindWebmentionHeaderRelWebmention() {
@@ -77,8 +77,8 @@ Link: <http://pubsubhubbub.appspot.com>; rel=\"hub\", <http://pubsubhubbub.super
 
     $target = 'http://aaronparecki.com/';
     $this->client->c('headers', $target, IndieWeb\MentionClientTest::_parse_headers($headers));
-    $supports = $this->client->supportsWebmention($target);
-    $this->assertEquals(true, $supports);
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals('http://notizblog.org/?webmention=endpoint', $endpoint);
   }
 
   public function testFindWebmentionHeaderRelativeUrl() {
