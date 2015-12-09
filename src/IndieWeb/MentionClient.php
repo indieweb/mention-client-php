@@ -29,7 +29,8 @@ class MentionClient {
 
       // First try a HEAD request and look for X-Pingback header
       if(!$this->c('headers', $target)) {
-        $this->c('headers', $target, static::_head($target)['headers']);
+        $head = static::_head($target);
+        $this->c('headers', $target, $head['headers']);
       }
 
       $headers = $this->c('headers', $target);
@@ -40,7 +41,8 @@ class MentionClient {
       } else {
         self::_debug("No pingback server found in header, looking in the body now");
         if(!$this->c('body', $target)) {
-          $this->c('body', $target, static::_get($target)['body']);
+          $body = static::_get($target);
+          $this->c('body', $target, $body['body']);
         }
         $body = $this->c('body', $target);
         if(preg_match("/<link rel=\"pingback\" href=\"([^\"]+)\" ?\/?>/i", $body, $match)) {
@@ -134,7 +136,8 @@ class MentionClient {
 
       // First try a HEAD request and look for Link header
       if(!$this->c('headers', $target)) {
-        $this->c('headers', $target, static::_head($target)['headers']);
+        $head = static::_head($target);
+        $this->c('headers', $target, $head['headers']);
       }
 
       $headers = $this->c('headers', $target);
@@ -156,7 +159,8 @@ class MentionClient {
       } else {
         self::_debug("No webmention server found in header, looking in the body now");
         if(!$this->c('body', $target)) {
-          $this->c('body', $target, static::_get($target)['body']);
+          $body = static::_get($target);
+          $this->c('body', $target, $body['body']);
         }
         if($endpoint=$this->_findWebmentionEndpointInHTML($this->c('body', $target), $target)) {
           $this->c('webmentionServer', $target, $endpoint);
@@ -252,7 +256,8 @@ class MentionClient {
       $this->_sourceBody = $sourceBody;
       $this->_links = self::findOutgoingLinks($sourceBody);
     } else {
-      $this->_sourceBody = static::_get($sourceURL)['body'];
+      $body = static::_get($sourceURL);
+      $this->_sourceBody = $body['body'];
       $parsed = \Mf2\parse($this->_sourceBody, $sourceURL);
       $this->_links = self::findOutgoingLinks($parsed);
     }
@@ -302,10 +307,10 @@ class MentionClient {
     curl_setopt($ch, CURLOPT_NOBODY, true);
     if (self::$_proxy) curl_setopt($ch, CURLOPT_PROXY, self::$_proxy);
     $response = curl_exec($ch);
-    return [
+    return array(
       'status' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
       'headers' => self::_parse_headers(trim($response)),
-    ];
+    );
   }
 
   protected static function _get($url) {
@@ -315,11 +320,11 @@ class MentionClient {
     if (self::$_proxy) curl_setopt($ch, CURLOPT_PROXY, self::$_proxy);
     $response = curl_exec($ch);
     $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-    return [
+    return array(
       'status' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
       'headers' => self::_parse_headers(trim(substr($response, 0, $header_size))),
       'body' => substr($response, $header_size)
-    ];
+    );
   }
 
   protected static function _post($url, $body, $headers=array()) {
@@ -333,11 +338,11 @@ class MentionClient {
     $response = curl_exec($ch);
     self::_debug($response);
     $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-    return [
+    return array(
       'status' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
       'headers' => self::_parse_headers(trim(substr($response, 0, $header_size))),
       'body' => substr($response, $header_size)
-    ];
+    );
   }
 
   protected static function _parse_headers($headers) {

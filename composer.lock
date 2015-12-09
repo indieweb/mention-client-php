@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "7852b284e6f6474987fad89678e06e9c",
-    "content-hash": "63cdb2f1e142f9a6a1fa8a1d13da08ce",
+    "hash": "db5f73cec80172348b4c9ef0f6e2ca65",
+    "content-hash": "8aeb9b9a8d04f62abaa36cfa8577b540",
     "packages": [
         {
             "name": "mf2/mf2",
@@ -471,12 +471,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "b2caaf8947aba5e002d42126723e9d69795f32b4"
+                "reference": "83498fee4d9272cc5c59630cc2be939accdcc74b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/b2caaf8947aba5e002d42126723e9d69795f32b4",
-                "reference": "b2caaf8947aba5e002d42126723e9d69795f32b4",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/83498fee4d9272cc5c59630cc2be939accdcc74b",
+                "reference": "83498fee4d9272cc5c59630cc2be939accdcc74b",
                 "shasum": ""
             },
             "require": {
@@ -535,7 +535,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2015-11-30 08:18:59"
+            "time": "2015-12-07 17:57:53"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
@@ -663,19 +663,19 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/diff.git",
-                "reference": "2b0112e42c338afa9ad9dfeb94d66f6d84c2f828"
+                "reference": "13edfd8706462032c2f52b4b862974dd46b71c9e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/diff/zipball/2b0112e42c338afa9ad9dfeb94d66f6d84c2f828",
-                "reference": "2b0112e42c338afa9ad9dfeb94d66f6d84c2f828",
+                "url": "https://api.github.com/repos/sebastianbergmann/diff/zipball/13edfd8706462032c2f52b4b862974dd46b71c9e",
+                "reference": "13edfd8706462032c2f52b4b862974dd46b71c9e",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
             "require-dev": {
-                "phpunit/phpunit": "~5"
+                "phpunit/phpunit": "~4.8"
             },
             "type": "library",
             "extra": {
@@ -707,7 +707,7 @@
             "keywords": [
                 "diff"
             ],
-            "time": "2015-12-06 07:21:36"
+            "time": "2015-12-08 07:14:41"
         },
         {
             "name": "sebastian/environment",
@@ -967,25 +967,25 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "dev-master",
+            "version": "2.8.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "8bae579c7afa252c055855f071c751eb75dcf6c4"
+                "reference": "aceecdb89565ebdedd908aaf327f5c34305be981"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/8bae579c7afa252c055855f071c751eb75dcf6c4",
-                "reference": "8bae579c7afa252c055855f071c751eb75dcf6c4",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/aceecdb89565ebdedd908aaf327f5c34305be981",
+                "reference": "aceecdb89565ebdedd908aaf327f5c34305be981",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.5.9"
+                "php": ">=5.3.9"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "3.1-dev"
+                    "dev-master": "2.8-dev"
                 }
             },
             "autoload": {
@@ -1012,7 +1012,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2015-12-05 11:13:35"
+            "time": "2015-12-05 13:47:06"
         }
     ],
     "aliases": [],

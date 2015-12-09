@@ -20,10 +20,10 @@ class MentionClientTest extends MentionClient {
 
   protected static function _head($url) {
     $response = self::_read_file($url);
-    return [
+    return array(
       'code' => $response['code'],
       'headers' => $response['headers']
-    ];
+    );
   }
 
   protected static function _get($url) {
@@ -49,10 +49,10 @@ class MentionClientTest extends MentionClient {
 
     $headers = preg_replace('/HTTP\/1\.1 \d+ .+/', '', $headers);
 
-    return [
+    return array(
       'code' => $code,
       'headers' => self::_parse_headers($headers),
       'body' => $body
-    ];
+    );
   }
 }
