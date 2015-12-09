@@ -136,7 +136,7 @@ The response is an array containing the HTTP status code, HTTP headers, and the 
 }
 ```
 
-You can check if the webmention was accepted by testing if the response code is 200 or 202.
+You can check if the webmention was accepted by testing if the response code is 200, 201 or 202.
 
 ```php
 <?php
@@ -158,6 +158,16 @@ return a list of outgoing links found on the page.
 $client = new IndieWeb\MentionClient();
 $urls = $client->findOutgoingLinks($html);
 ?>
+```
+
+Alternately, you can pass a parsed Microformats object to the `findOutgoingLinks`
+function and it will search for URLs in any property as well as in the HTML of
+any e-content objects.
+
+```php
+$client = new IndieWeb\MentionClient();
+$parsed = \Mf2\parse($html, $sourceURL);
+$urls = self::findOutgoingLinks($parsed);
 ```
 
 All links found will be returned an array, with duplicate URLs removed. If no links
