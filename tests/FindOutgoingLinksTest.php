@@ -67,4 +67,18 @@ class findOutgoingLinksTest extends PHPUnit_Framework_TestCase {
     $this->assertEquals(array('http://example.com/','http://source.example.net/'), $links);
   }
 
+  public function testFindNoLinksInHEntry() {
+    $html = '<div class="h-entry"><div class="p-author">example</div></div>';
+    $mf2 = Mf2\parse($html, 'http://source.example.net/');
+    $links = IndieWeb\MentionClientTest::findOutgoingLinks($mf2);
+    $this->assertEquals(array(), $links);
+  }
+
+  public function testFindNoLinksInHTML() {
+    $html = '<div><p>Hello World</p></div>';
+    $mf2 = Mf2\parse($html, 'http://source.example.net/');
+    $links = IndieWeb\MentionClientTest::findOutgoingLinks($mf2);
+    $this->assertEquals(array(), $links);
+  }
+
 }

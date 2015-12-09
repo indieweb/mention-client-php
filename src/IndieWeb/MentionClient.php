@@ -18,6 +18,9 @@ class MentionClient {
 
   private static $_proxy = false;
 
+  /**
+   * @codeCoverageIgnore
+   */
   public function setProxy($proxy_string) {
     self::$_proxy = $proxy_string;
   }
@@ -60,7 +63,7 @@ class MentionClient {
   public static function sendPingbackToEndpoint($endpoint, $source, $target) {
     self::_debug("Sending pingback now!");
 
-    $payload = xmlrpc_encode_request('pingback.ping', array($source,  $target));
+    $payload = static::xmlrpc_encode_request('pingback.ping', array($source,  $target));
 
     $response = static::_post($endpoint, $payload, array(
       'Content-type: application/xml'
@@ -71,13 +74,16 @@ class MentionClient {
 
     $body = xmlrpc_decode($response['body']);
 
-    if(is_array($body))
+    // Invalid XMLRPC response
+    if($body === null)
       return false;
 
-    if($body == null || is_array($body))
+    // The pingback response was not a string
+    if(!is_string($body))
       return false;
 
-    if(is_string($response['body']) && !empty($response['body']))
+    // The response must contain a non-empty string
+    if(strlen($body) > 0)
       return true;
 
     return false;
@@ -103,9 +109,6 @@ class MentionClient {
     $endpoint = false;
     if(preg_match('/<(?:link|a)[ ]+href="([^"]+)"[ ]+rel="[^" ]* ?webmention ?[^" ]*"[ ]*\/?>/i', $body, $match)
         || preg_match('/<(?:link|a)[ ]+rel="[^" ]* ?webmention ?[^" ]*"[ ]+href="([^"]+)"[ ]*\/?>/i', $body, $match)) {
-      $endpoint = $match[1];
-    } elseif(preg_match('/<(?:link|a)[ ]+href="([^"]+)"[ ]+rel="http:\/\/webmention\.org\/?"[ ]*\/?>/i', $body, $match)
-        || preg_match('/<(?:link|a)[ ]+rel="http:\/\/webmention\.org\/?"[ ]+href="([^"]+)"[ ]*\/?>/i', $body, $match)) {
       $endpoint = $match[1];
     }
     if($endpoint && $targetURL && function_exists('\Mf2\resolveUrl')) {
@@ -292,14 +295,23 @@ class MentionClient {
       return 0;
   }
 
+  /**
+   * @codeCoverageIgnore
+   */
   public static function enableDebug() {
     self::$_debugEnabled = true;
   }
+  /**
+   * @codeCoverageIgnore
+   */
   private static function _debug($msg) {
     if(self::$_debugEnabled)
       echo "\t" . $msg . "\n";
   }
 
+  /**
+   * @codeCoverageIgnore
+   */
   protected static function _head($url) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -313,6 +325,9 @@ class MentionClient {
     );
   }
 
+  /**
+   * @codeCoverageIgnore
+   */
   protected static function _get($url) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -327,6 +342,9 @@ class MentionClient {
     );
   }
 
+  /**
+   * @codeCoverageIgnore
+   */
   protected static function _post($url, $body, $headers=array()) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -369,6 +387,19 @@ class MentionClient {
     return $retVal;
   }
 
+  public static function xmlrpc_encode_request($method, $params) {
+    $xml  = '<?xml version="1.0"?>';
+    $xml .= '<methodCall>';
+    $xml .= '<methodName>'.htmlspecialchars($method).'</methodName>';
+    $xml .= '<params>';
+    foreach ($params as $param) {
+      $xml .= '<param><value><string>'.htmlspecialchars($param).'</string></value></param>';
+    }
+    $xml .= '</params></methodCall>';
+
+    return $xml;
+  }
+
   public function c($type, $url, $val=null) {
     // Create the empty record if it doesn't yet exist
     $key = '_'.$type;
@@ -384,19 +415,4 @@ class MentionClient {
     return $this->{$key}[$url];
   }
 
-}
-
-if (!function_exists('xmlrpc_encode_request')) {
-  function xmlrpc_encode_request($method, $params) {
-    $xml  = '<?xml version="1.0"?>';
-    $xml .= '<methodCall>';
-    $xml .= '<methodName>'.htmlspecialchars($method).'</methodName>';
-    $xml .= '<params>';
-    foreach ($params as $param) {
-      $xml .= '<param><value><string>'.htmlspecialchars($param).'</string></value></param>';
-    }
-    $xml .= '</params></methodCall>';
-
-    return $xml;
-  }
 }

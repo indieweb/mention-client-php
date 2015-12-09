@@ -10,7 +10,7 @@ Content-Type: text/xml; charset=UTF-8
   <params>
     <param>
       <value>
-        <int>100</int>
+        <string></string>
       </value>
     </param>
   </params>

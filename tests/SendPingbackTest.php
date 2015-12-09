@@ -14,6 +14,12 @@ class SendPingbackTest extends PHPUnit_Framework_TestCase {
   }
 
   public function testInvalidXMLResponse() {
+    $endpoint = 'http://pingback-target.example/invalid-xmlrpc';
+    $response = $this->client->sendPingbackToEndpoint($endpoint, 'source', 'target');
+    $this->assertFalse($response);
+  }
+
+  public function testInvalidBodyResponse() {
     $endpoint = 'http://pingback-target.example/invalid-body';
     $response = $this->client->sendPingbackToEndpoint($endpoint, 'source', 'target');
     $this->assertFalse($response);
@@ -21,6 +27,12 @@ class SendPingbackTest extends PHPUnit_Framework_TestCase {
 
   public function testInvalidRequest() {
     $endpoint = 'http://pingback-target.example/invalid-request';
+    $response = $this->client->sendPingbackToEndpoint($endpoint, 'source', 'target');
+    $this->assertFalse($response);
+  }
+
+  public function testEmptyBodyResponse() {
+    $endpoint = 'http://pingback-target.example/empty-body';
     $response = $this->client->sendPingbackToEndpoint($endpoint, 'source', 'target');
     $this->assertFalse($response);
   }

@@ -47,6 +47,14 @@ Link: <http://aaronparecki.com/>; rel=\"me\"\r
     $target = 'http://target.example.com/body-link.html';
     $endpoint = $this->client->discoverWebmentionEndpoint($target);
     $this->assertEquals('http://webmention.example/webmention', $endpoint);
+
+    $target = 'http://target.example.com/body-link-org.html';
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals('http://webmention.example/webmention', $endpoint);
+
+    $target = 'http://target.example.com/body-link-org2.html';
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals('http://webmention.example/webmention', $endpoint);
   }
 
   public function testDiscoverPingbackEndpointInBodyLink() {
