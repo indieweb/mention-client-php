@@ -41,7 +41,11 @@ class MentionClientTest extends MentionClient {
     }
     $response = file_get_contents($filename);
 
-    list($headers, $body) = explode("\r\n\r\n", $response);
+    $split = explode("\r\n\r\n", $response);
+    if(count($split) != 2) {
+      throw new \Exception("Invalid file contents, check that newlines are CRLF: $url");
+    }
+    list($headers, $body) = $split;
 
     if(preg_match('/HTTP\/1\.1 (\d+)/', $headers, $match)) {
       $code = $match[1];

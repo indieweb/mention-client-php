@@ -44,7 +44,20 @@ class SendPingbackTest extends PHPUnit_Framework_TestCase {
   }
 
   public function testSendPingbackNoEndpoint() {
-    $target = 'http://pingback-target.example.com/';
+    $target = 'http://pingback-target.example/no-endpoint.html';
+    $result = $this->client->sendPingback('http://source.example.com/', $target);
+    $this->assertFalse($result);
   }
 
+  public function testSendPingbackHasValidEndpoint() {
+    $target = 'http://pingback-target.example/has-valid-endpoint.html';
+    $result = $this->client->sendPingback('http://source.example.com/', $target);
+    $this->assertTrue($result);
+  }
+
+  public function testSendPingbackHasErroringEndpoint() {
+    $target = 'http://pingback-target.example/has-erroring-endpoint.html';
+    $result = $this->client->sendPingback('http://source.example.com/', $target);
+    $this->assertFalse($result);
+  }
 }
