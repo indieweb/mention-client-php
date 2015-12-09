@@ -270,7 +270,9 @@ class MentionClient {
     foreach($this->_links as $target) {
       self::_debug("Checking $target for webmention and pingback endpoints");
 
-      $totalAccepted += $this->sendFirstSupportedMention($sourceURL, $target);
+      if($this->sendFirstSupportedMention($sourceURL, $target)) {
+        $totalAccepted++;
+      }
     }
 
     return $totalAccepted;
@@ -282,17 +284,22 @@ class MentionClient {
 
     // Look for a webmention endpoint first
     if($this->discoverWebmentionEndpoint($target)) {
-      $accepted = $this->sendWebmention($source, $target);
+      $result = $this->sendWebmention($source, $target);
+      if($result &&
+        ($result['code'] == 200
+          || $result['code'] == 201
+          || $result['code'] == 202)) {
+        $accepted = 'webmention';
+      }
     // Only look for a pingback server if we didn't find a webmention server
-    } else
-    if($this->discoverPingbackEndpoint($target)) {
-      $accepted = $this->sendPingback($source, $target);
+    } else if($this->discoverPingbackEndpoint($target)) {
+      $result = $this->sendPingback($source, $target);
+      if($result) {
+        $accepted = 'pingback';
+      }
     }
 
-    if($accepted)
-      return 1;
-    else
-      return 0;
+    return $accepted;
   }
 
   /**

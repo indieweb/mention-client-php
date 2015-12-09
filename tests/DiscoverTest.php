@@ -34,13 +34,13 @@ Link: <http://aaronparecki.com/>; rel=\"me\"\r
   public function testDiscoverWebmentionEndpointInHeader() {
     $target = 'http://target.example.com/header.html';
     $endpoint = $this->client->discoverWebmentionEndpoint($target);
-    $this->assertEquals('http://webmention.example/webmention', $endpoint);
+    $this->assertEquals('http://webmention-endpoint.example/queued-response', $endpoint);
   }
 
   public function testDiscoverPingbackEndpointInHeader() {
     $target = 'http://target.example.com/header.html';
     $endpoint = $this->client->discoverPingbackEndpoint($target);
-    $this->assertEquals('http://webmention.example/pingback', $endpoint);
+    $this->assertEquals('http://pingback-endpoint.example/valid-response', $endpoint);
   }
 
   public function testDiscoverWebmentionEndpointInBodyLink() {
