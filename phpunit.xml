@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<phpunit bootstrap="tests/bootstrap.php">
+<phpunit
+  bootstrap="tests/bootstrap.php"
+  beStrictAboutTestsThatDoNotTestAnything="true">
   <testsuites>
     <testsuite name="comments">
       <directory suffix="Test.php">tests</directory>
@@ -13,4 +15,7 @@
       </exclude>
     </whitelist>
   </filter>
+  <logging>
+    <log type="coverage-html" target="./coverage"/>
+  </logging>
 </phpunit>
