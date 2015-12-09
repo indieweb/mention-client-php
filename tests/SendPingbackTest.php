@@ -8,39 +8,43 @@ class SendPingbackTest extends PHPUnit_Framework_TestCase {
   }
 
   public function testNot200Response() {
-    $endpoint = 'http://pingback-target.example/404-response';
+    $endpoint = 'http://pingback-endpoint.example/404-response';
     $response = $this->client->sendPingbackToEndpoint($endpoint, 'source', 'target');
     $this->assertFalse($response);
   }
 
   public function testInvalidXMLResponse() {
-    $endpoint = 'http://pingback-target.example/invalid-xmlrpc';
+    $endpoint = 'http://pingback-endpoint.example/invalid-xmlrpc';
     $response = $this->client->sendPingbackToEndpoint($endpoint, 'source', 'target');
     $this->assertFalse($response);
   }
 
   public function testInvalidBodyResponse() {
-    $endpoint = 'http://pingback-target.example/invalid-body';
+    $endpoint = 'http://pingback-endpoint.example/invalid-body';
     $response = $this->client->sendPingbackToEndpoint($endpoint, 'source', 'target');
     $this->assertFalse($response);
   }
 
   public function testInvalidRequest() {
-    $endpoint = 'http://pingback-target.example/invalid-request';
+    $endpoint = 'http://pingback-endpoint.example/invalid-request';
     $response = $this->client->sendPingbackToEndpoint($endpoint, 'source', 'target');
     $this->assertFalse($response);
   }
 
   public function testEmptyBodyResponse() {
-    $endpoint = 'http://pingback-target.example/empty-body';
+    $endpoint = 'http://pingback-endpoint.example/empty-body';
     $response = $this->client->sendPingbackToEndpoint($endpoint, 'source', 'target');
     $this->assertFalse($response);
   }
 
   public function testValidResponse() {
-    $endpoint = 'http://pingback-target.example/valid-response';
+    $endpoint = 'http://pingback-endpoint.example/valid-response';
     $response = $this->client->sendPingbackToEndpoint($endpoint, 'source', 'target');
     $this->assertTrue($response);
+  }
+
+  public function testSendPingbackNoEndpoint() {
+    $target = 'http://pingback-target.example.com/';
   }
 
 }
