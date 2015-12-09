@@ -64,10 +64,21 @@ class MentionClient {
       'Content-type: application/xml'
     ));
 
-    if(is_array(xmlrpc_decode($response['body'])))
+    if($response['code'] != 200)
       return false;
-    elseif(is_string($response['body']) && !empty($response['body']))
+
+    $body = xmlrpc_decode($response['body']);
+
+    if(is_array($body))
+      return false;
+
+    if($body == null || is_array($body))
+      return false;
+
+    if(is_string($response['body']) && !empty($response['body']))
       return true;
+
+    return false;
   }
 
   public function sendPingback($sourceURL, $targetURL) {
