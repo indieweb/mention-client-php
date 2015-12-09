@@ -17,10 +17,6 @@ Link: <http://aaronparecki.com/>; rel=\"me\"\r
     $this->client->c('headers', $target, IndieWeb\MentionClientTest::_parse_headers($headers));
     $endpoint = $this->client->discoverWebmentionEndpoint($target);
     $this->assertEquals('http://aaronparecki.com/webmention.php', $endpoint);
-
-    $target = 'http://target.example.com/advertise-endpoints.html';
-    $endpoint = $this->client->discoverWebmentionEndpoint($target);
-    $this->assertEquals('http://webmention.example/webmention', $endpoint);
   }
 
   public function testDiscoverPingbackEndpoint() {
@@ -33,10 +29,36 @@ Link: <http://aaronparecki.com/>; rel=\"me\"\r
     $this->client->c('headers', $target, IndieWeb\MentionClientTest::_parse_headers($headers));
     $endpoint = $this->client->discoverPingbackEndpoint($target);
     $this->assertEquals('http://pingback.me/webmention?forward=http%3A%2F%2Faaronparecki.com%2Fwebmention.php', $endpoint);
+  }
 
-    $target = 'http://target.example.com/advertise-endpoints.html';
+  public function testDiscoverWebmentionEndpointInHeader() {
+    $target = 'http://target.example.com/header.html';
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals('http://webmention.example/webmention', $endpoint);
+  }
+
+  public function testDiscoverPingbackEndpointInHeader() {
+    $target = 'http://target.example.com/header.html';
     $endpoint = $this->client->discoverPingbackEndpoint($target);
     $this->assertEquals('http://webmention.example/pingback', $endpoint);
+  }
+
+  public function testDiscoverWebmentionEndpointInBodyLink() {
+    $target = 'http://target.example.com/body-link.html';
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals('http://webmention.example/webmention', $endpoint);
+  }
+
+  public function testDiscoverPingbackEndpointInBodyLink() {
+    $target = 'http://target.example.com/body-link.html';
+    $endpoint = $this->client->discoverPingbackEndpoint($target);
+    $this->assertEquals('http://webmention.example/pingback', $endpoint);
+  }
+
+  public function testDiscoverWebmentionEndpointInBodyA() {
+    $target = 'http://target.example.com/body-a.html';
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals('http://webmention.example/webmention', $endpoint);
   }
 
 }
