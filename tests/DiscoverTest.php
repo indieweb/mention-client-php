@@ -18,12 +18,12 @@ Link: <http://aaronparecki.com/>; rel=\"me\"\r
     $endpoint = $this->client->discoverWebmentionEndpoint($target);
     $this->assertEquals('http://aaronparecki.com/webmention.php', $endpoint);
 
-    $target = 'http://pin13.net/mention-client-php/target.php';
+    $target = 'http://target.example.com/advertise-endpoints.html';
     $endpoint = $this->client->discoverWebmentionEndpoint($target);
-    $this->assertEquals('http://pin13.net/mention-client-php/webmention.php', $endpoint);
+    $this->assertEquals('http://webmention.example/webmention', $endpoint);
   }
 
-  public function testSupportsPingback() {
+  public function testDiscoverPingbackEndpoint() {
   	$headers = "HTTP/1.1 200 OK\r
 X-Pingback: http://pingback.me/webmention?forward=http%3A%2F%2Faaronparecki.com%2Fwebmention.php\r
 Link: <http://aaronparecki.com/>; rel=\"me\"\r
@@ -33,6 +33,10 @@ Link: <http://aaronparecki.com/>; rel=\"me\"\r
     $this->client->c('headers', $target, IndieWeb\MentionClientTest::_parse_headers($headers));
     $endpoint = $this->client->discoverPingbackEndpoint($target);
     $this->assertEquals('http://pingback.me/webmention?forward=http%3A%2F%2Faaronparecki.com%2Fwebmention.php', $endpoint);
+
+    $target = 'http://target.example.com/advertise-endpoints.html';
+    $endpoint = $this->client->discoverPingbackEndpoint($target);
+    $this->assertEquals('http://webmention.example/pingback', $endpoint);
   }
 
 }
