@@ -6,6 +6,8 @@ namespace IndieWeb;
  */
 class MentionClientTest extends MentionClient {
 
+  public static $dataDir = null;
+
   public function __call($method, $args) {
     $method = new \ReflectionMethod('IndieWeb\MentionClient', $method);
     $method->setAccessible(true);
@@ -35,7 +37,13 @@ class MentionClientTest extends MentionClient {
   }
 
   private static function _read_file($url) {
-    $filename = dirname(__FILE__).'/../../tests/data/'.preg_replace('/https?:\/\//', '', $url);
+    if(self::$dataDir) {
+      $dataDir = self::$dataDir;
+    } else {
+      $dataDir = dirname(__FILE__).'/../../tests/data/';
+    }
+
+    $filename = $dataDir.preg_replace('/https?:\/\//', '', $url);
     if(!file_exists($filename)) {
       $filename = dirname(__FILE__).'/../../tests/data/404.response.txt';
     }
