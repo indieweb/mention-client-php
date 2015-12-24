@@ -324,6 +324,7 @@ class MentionClient {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HEADER, true);
     curl_setopt($ch, CURLOPT_NOBODY, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     if (self::$_proxy) curl_setopt($ch, CURLOPT_PROXY, self::$_proxy);
     $response = curl_exec($ch);
     return array(
@@ -339,6 +340,7 @@ class MentionClient {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HEADER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     if (self::$_proxy) curl_setopt($ch, CURLOPT_PROXY, self::$_proxy);
     $response = curl_exec($ch);
     $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);

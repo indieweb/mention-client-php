@@ -167,7 +167,7 @@ any e-content objects.
 ```php
 $client = new IndieWeb\MentionClient();
 $parsed = \Mf2\parse($html, $sourceURL);
-$urls = self::findOutgoingLinks($parsed);
+$urls = $client->findOutgoingLinks($parsed);
 ```
 
 All links found will be returned an array, with duplicate URLs removed. If no links
