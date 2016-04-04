@@ -97,4 +97,10 @@ class TagParserTest extends PHPUnit_Framework_TestCase {
     $this->assertEquals('http://example.com/webmention', $endpoint);
   }
 
+  public function testParseProtocolRelativeURL() {
+    $html = '<link href="//example.com/webmention" rel="webmention">';
+    $endpoint = $this->client->_findWebmentionEndpointInHTML($html, 'https://example.com/post/1');
+    $this->assertEquals('https://example.com/webmention', $endpoint);
+  }
+
 }
