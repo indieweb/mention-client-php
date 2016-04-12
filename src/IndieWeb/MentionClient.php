@@ -69,24 +69,14 @@ class MentionClient {
       'Content-type: application/xml'
     ));
 
-    if($response['code'] != 200)
+    if($response['code'] != 200 || empty($response['body']))
       return false;
 
-    $body = xmlrpc_decode($response['body']);
+     // collapse whitespace just to be safe
+     $body = strtolower(preg_replace('/\s+/', '', $response['body']));
 
-    // Invalid XMLRPC response
-    if($body === null)
-      return false;
-
-    // The pingback response was not a string
-    if(!is_string($body))
-      return false;
-
-    // The response must contain a non-empty string
-    if(strlen($body) > 0)
-      return true;
-
-    return false;
+     // successful response MUST contain a single string
+     return $body && strpos($body, '<fault>') === false && strpos($body, '<string>') !== false;
   }
 
   public function sendPingback($sourceURL, $targetURL) {

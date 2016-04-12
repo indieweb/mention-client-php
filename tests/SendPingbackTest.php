@@ -34,7 +34,7 @@ class SendPingbackTest extends PHPUnit_Framework_TestCase {
   public function testEmptyBodyResponse() {
     $endpoint = 'http://pingback-endpoint.example/empty-body';
     $response = $this->client->sendPingbackToEndpoint($endpoint, 'source', 'target');
-    $this->assertFalse($response);
+    $this->assertTrue($response);
   }
 
   public function testValidResponse() {
