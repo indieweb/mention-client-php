@@ -110,9 +110,7 @@ class MentionClient {
 
   protected function _findWebmentionEndpointInHeader($link_header, $targetURL=false) {
     $endpoint = false;
-    if(preg_match('~<((?:https?://)?[^>]+)>; rel="webmention"~', $link_header, $match)) {
-      $endpoint = $match[1];
-    } elseif(preg_match('~<((?:https?://)?[^>]+)>; rel="http://webmention.org/?"~', $link_header, $match)) {
+    if(preg_match('~<((?:https?://)?[^>]+)>; rel="?(?:https?://webmention.org/?|webmention)"?~', $link_header, $match)) {
       $endpoint = $match[1];
     }
     if($endpoint && $targetURL && function_exists('\Mf2\resolveUrl')) {

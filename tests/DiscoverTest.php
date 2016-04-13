@@ -69,4 +69,52 @@ Link: <http://aaronparecki.com/>; rel=\"me\"\r
     $this->assertEquals('http://webmention.example/webmention', $endpoint);
   }
 
+  public function testDiscoverWebmentionEndpointInWebmentionRocksTest1() {
+    $target = "http://target.example.com/webmention-rocks-test-1.html";
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals("http://target.example.com/test/1/webmention", $endpoint);
+  }
+
+  public function testDiscoverWebmentionEndpointInWebmentionRocksTest2() {
+    $target = "http://target.example.com/webmention-rocks-test-2.html";
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals("https://webmention.rocks/test/2/webmention", $endpoint);
+  }
+
+  public function testDiscoverWebmentionEndpointInWebmentionRocksTest3() {
+    $target = "http://target.example.com/webmention-rocks-test-3.html";
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals("http://target.example.com/test/3/webmention", $endpoint);
+  }
+
+  public function testDiscoverWebmentionEndpointInWebmentionRocksTest4() {
+    $target = "http://target.example.com/webmention-rocks-test-4.html";
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals("https://webmention.rocks/test/4/webmention", $endpoint);
+  }
+
+  public function testDiscoverWebmentionEndpointInWebmentionRocksTest5() {
+    $target = "http://target.example.com/webmention-rocks-test-5.html";
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals("http://target.example.com/test/5/webmention", $endpoint);
+  }
+
+  public function testDiscoverWebmentionEndpointInWebmentionRocksTest6() {
+    $target = "http://target.example.com/webmention-rocks-test-6.html";
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals("https://webmention.rocks/test/6/webmention", $endpoint);
+  }
+
+  public function testDiscoverWebmentionEndpointInWebmentionRocksTest7() {
+    $target = "http://target.example.com/webmention-rocks-test-7.html";
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals("https://webmention.rocks/test/7/webmention", $endpoint);
+  }
+
+  public function testDiscoverWebmentionEndpointInWebmentionRocksTest8() {
+    $target = "http://target.example.com/webmention-rocks-test-8.html";
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals("https://webmention.rocks/test/8/webmention", $endpoint);
+  }
+
 }
