@@ -63,8 +63,22 @@ Link: <http://aaronparecki.com/>; rel=\"me\"\r
     $this->assertEquals('http://webmention.example/pingback', $endpoint);
   }
 
+  public function testDiscoverPingbackEndpointInBodyWithoutMf2() {
+    $target = 'http://target.example.com/body-link.html';
+    $this->client->usemf2 = false;
+    $endpoint = $this->client->discoverPingbackEndpoint($target);
+    $this->assertEquals('http://webmention.example/pingback', $endpoint);
+  }
+
   public function testDiscoverWebmentionEndpointInBodyA() {
     $target = 'http://target.example.com/body-a.html';
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals('http://webmention.example/webmention', $endpoint);
+  }
+
+  public function testDiscoverWebmentionEndpointInBodyAWithoutMf2() {
+    $target = 'http://target.example.com/body-a.html';
+    $this->client->usemf2 = false;
     $endpoint = $this->client->discoverWebmentionEndpoint($target);
     $this->assertEquals('http://webmention.example/webmention', $endpoint);
   }
@@ -85,6 +99,12 @@ Link: <http://aaronparecki.com/>; rel=\"me\"\r
     $target = 'http://target.example.com/document-order-2.html';
     $endpoint = $this->client->discoverWebmentionEndpoint($target);
     $this->assertEquals('http://webmention.example/a', $endpoint);
+  }
+
+  public function testDiscoverWebmentionEndpointIsEmptyString() {
+    $target = 'http://target.example.com/empty-string.html';
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals('http://target.example.com/empty-string.html', $endpoint);
   }
 
   public function testDiscoverWebmentionEndpointInWebmentionRocksTest1() {
