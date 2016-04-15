@@ -4,6 +4,7 @@ Webmention Client
 Client library for sending [webmention](http://indiewebcamp.com/webmention) and [pingback](http://indiewebcamp.com/pingback) notifications.
 
 [![Build Status](https://travis-ci.org/indieweb/mention-client-php.png?branch=master)](http://travis-ci.org/indieweb/mention-client-php)
+[![Packagist](https://img.shields.io/packagist/v/indieweb/mention-client.svg)](https://packagist.org/packages/indieweb/mention-client)
 
 Usage
 -----
