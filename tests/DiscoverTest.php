@@ -69,6 +69,24 @@ Link: <http://aaronparecki.com/>; rel=\"me\"\r
     $this->assertEquals('http://webmention.example/webmention', $endpoint);
   }
 
+  public function testShouldNotDiscoverWebmentionEndpointInBodyComment() {
+    $target = 'http://target.example.com/false-endpoint-in-comment.html';
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals('http://webmention.example/correct', $endpoint);
+  }
+
+  public function testDiscoverWebmentionEndpointInDocumentOrder1() {
+    $target = 'http://target.example.com/document-order-1.html';
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals('http://webmention.example/link', $endpoint);
+  }
+
+  public function testDiscoverWebmentionEndpointInDocumentOrder2() {
+    $target = 'http://target.example.com/document-order-2.html';
+    $endpoint = $this->client->discoverWebmentionEndpoint($target);
+    $this->assertEquals('http://webmention.example/a', $endpoint);
+  }
+
   public function testDiscoverWebmentionEndpointInWebmentionRocksTest1() {
     $target = "http://target.example.com/webmention-rocks-test-1.html";
     $endpoint = $this->client->discoverWebmentionEndpoint($target);
