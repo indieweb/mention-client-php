@@ -97,6 +97,7 @@ class MentionClient {
 
   protected function _findWebmentionEndpointInHTML($body, $targetURL=false) {
     $endpoint = false;
+    $body = preg_replace('/<!--(.*)-->/Us', '', $body);
     if(preg_match('/<(?:link|a)[ ]+href="([^"]+)"[ ]+rel="[^" ]* ?webmention ?[^" ]*"[ ]*\/?>/i', $body, $match)
         || preg_match('/<(?:link|a)[ ]+rel="[^" ]* ?webmention ?[^" ]*"[ ]+href="([^"]+)"[ ]*\/?>/i', $body, $match)) {
       $endpoint = $match[1];
