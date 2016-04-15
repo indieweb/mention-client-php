@@ -11,12 +11,15 @@ class MentionClient {
 
   private $_headers = array();
   private $_body = array();
+  private $_rels = array();
   private $_supportsPingback = array();
   private $_supportsWebmention = array();
   private $_pingbackServer = array();
   private $_webmentionServer = array();
 
   private static $_proxy = false;
+
+  public $usemf2 = true; // for testing, can set this to false to avoid using the Mf2 parser
 
   /**
    * @codeCoverageIgnore
@@ -46,11 +49,22 @@ class MentionClient {
         if(!$this->c('body', $target)) {
           $body = static::_get($target);
           $this->c('body', $target, $body['body']);
+          $this->_parseBody($target, $body['body']);
         }
-        $body = $this->c('body', $target);
-        if(preg_match("/<link rel=\"pingback\" href=\"([^\"]+)\" ?\/?>/i", $body, $match)) {
-          $this->c('pingbackServer', $target, $match[1]);
-          $this->c('supportsPingback', $target, true);
+        if($rels=$this->c('rels', $target)) {
+          // If the mf2 parser is present, then rels will have been set, and use that instead
+          if(count($rels)) {
+            if(array_key_exists('pingback', $rels)) {
+              $this->c('pingbackServer', $target, $rels['pingback'][0]);
+              $this->c('supportsPingback', $target, true);
+            }
+          }
+        } else {
+          $body = $this->c('body', $target);
+          if(preg_match("/<link rel=\"pingback\" href=\"([^\"]+)\" ?\/?>/i", $body, $match)) {
+            $this->c('pingbackServer', $target, $match[1]);
+            $this->c('supportsPingback', $target, true);
+          }
         }
       }
 
@@ -95,14 +109,23 @@ class MentionClient {
     }
   }
 
+  protected function _parseBody($target, $html) {
+    if(class_exists('\Mf2\Parser') && $this->usemf2) {
+      $parser = new \Mf2\Parser($html, $target);
+      list($rels, $alternates) = $parser->parseRelsAndAlternates();
+      $this->c('rels', $target, $rels);
+    }
+  }
+
   protected function _findWebmentionEndpointInHTML($body, $targetURL=false) {
     $endpoint = false;
+
     $body = preg_replace('/<!--(.*)-->/Us', '', $body);
-    if(preg_match('/<(?:link|a)[ ]+href="([^"]+)"[ ]+rel="[^" ]* ?webmention ?[^" ]*"[ ]*\/?>/i', $body, $match)
-        || preg_match('/<(?:link|a)[ ]+rel="[^" ]* ?webmention ?[^" ]*"[ ]+href="([^"]+)"[ ]*\/?>/i', $body, $match)) {
+    if(preg_match('/<(?:link|a)[ ]+href="([^"]*)"[ ]+rel="[^" ]* ?webmention ?[^" ]*"[ ]*\/?>/i', $body, $match)
+        || preg_match('/<(?:link|a)[ ]+rel="[^" ]* ?webmention ?[^" ]*"[ ]+href="([^"]*)"[ ]*\/?>/i', $body, $match)) {
       $endpoint = $match[1];
     }
-    if($endpoint && $targetURL && function_exists('\Mf2\resolveUrl')) {
+    if($endpoint !== false && $targetURL && function_exists('\Mf2\resolveUrl')) {
       // Resolve the URL if it's relative
       $endpoint = \Mf2\resolveUrl($targetURL, $endpoint);
     }
@@ -153,10 +176,26 @@ class MentionClient {
         if(!$this->c('body', $target)) {
           $body = static::_get($target);
           $this->c('body', $target, $body['body']);
+          $this->_parseBody($target, $body['body']);
         }
-        if($endpoint=$this->_findWebmentionEndpointInHTML($this->c('body', $target), $target)) {
-          $this->c('webmentionServer', $target, $endpoint);
-          $this->c('supportsWebmention', $target, true);
+        if($rels=$this->c('rels', $target)) {
+          // If the mf2 parser is present, then rels will have been set, so use that instead
+          if(count($rels)) {
+            if(array_key_exists('webmention', $rels)) {
+              $endpoint = $rels['webmention'][0];
+              $this->c('webmentionServer', $target, $endpoint);
+              $this->c('supportsWebmention', $target, true);
+            } elseif(array_key_exists('http://webmention.org/', $rels) || array_key_exists('http://webmention.org', $rels)) {
+              $endpoint = $rels[array_key_exists('http://webmention.org/', $rels) ? 'http://webmention.org/' : 'http://webmention.org'][0];
+              $this->c('webmentionServer', $target, $endpoint);
+              $this->c('supportsWebmention', $target, true);
+            }
+          }
+        } else {
+          if($endpoint=$this->_findWebmentionEndpointInHTML($this->c('body', $target), $target)) {
+            $this->c('webmentionServer', $target, $endpoint);
+            $this->c('supportsWebmention', $target, true);
+          }
         }
       }
 
