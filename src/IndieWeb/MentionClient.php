@@ -151,7 +151,7 @@ class MentionClient {
   /**
    * finds webmention endpoints in the body. protected function
    * @param $body
-   * @param bool $targetURL
+   * @param string $targetURL
    * @return bool
    */
   protected function _findWebmentionEndpointInHTML($body, $targetURL = false) {
@@ -171,7 +171,7 @@ class MentionClient {
 
   /**
    * @param $link_header
-   * @param bool $targetURL
+   * @param string $targetURL
    * @return bool
    */
   protected function _findWebmentionEndpointInHeader($link_header, $targetURL = false) {
@@ -307,7 +307,7 @@ class MentionClient {
    */
   public static function findOutgoingLinks($input) {
     // Find all outgoing links in the source
-    if (is_string($input)) {
+    if(is_string($input)) {
       preg_match_all("/<a[^>]+href=.(https?:\/\/[^'\"]+)/i", $input, $matches);
       return array_unique($matches[1]);
     } elseif (is_array($input) && array_key_exists('items', $input) && array_key_exists(0, $input['items'])) {
@@ -423,7 +423,7 @@ class MentionClient {
 
   /**
    * Enables debug messages to appear during activity. Not recommended for production use.
-   *  @codeCoverageIgnore
+   * @codeCoverageIgnore
    */
   public static function enableDebug() {
     self::$_debugEnabled = true;
@@ -533,7 +533,7 @@ class MentionClient {
   /**
    * Static function for XML-RPC encoding request.
    * @param $method string goes into MethodName XML tag
-   * @param $params array set of strings that go into param/valye XML tags.
+   * @param $params array set of strings that go into param/value XML tags.
    * @return string
    */
   public static function xmlrpc_encode_request($method, $params) {
@@ -553,7 +553,7 @@ class MentionClient {
    * Configuration key/value system for MentionClient
    * @param $type
    * @param $url
-   * @param null $val
+   * @param mixed $val If not null, is set to default value
    * @return mixed
    */
   public function c($type, $url, $val=null) {
