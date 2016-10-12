@@ -550,7 +550,7 @@ class MentionClient {
   }
 
   /**
-   * Configuration key/value system for MentionClient
+   * Caching key/value system for MentionClient
    * @param $type
    * @param $url
    * @param mixed $val If not null, is set to default value
