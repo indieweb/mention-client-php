@@ -209,7 +209,7 @@ which handles accepting the XMLRPC request and exposes the data via an API.
 License
 -------
 
-Copyright 2013 by Aaron Parecki
+Copyright 2013-2016 by Aaron Parecki and contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
