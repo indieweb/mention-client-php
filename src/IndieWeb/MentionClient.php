@@ -48,6 +48,7 @@ class MentionClient {
       // First try a HEAD request and look for X-Pingback header
       if(!$this->c('headers', $target)) {
         $head = static::_head($target);
+        $target = $head['url'];
         $this->c('headers', $target, $head['headers']);
       }
 
@@ -60,6 +61,7 @@ class MentionClient {
         self::_debug("discoverPingbackEndpoint: No pingback server found in header, looking in the body now");
         if(!$this->c('body', $target)) {
           $body = static::_get($target);
+          $target = $body['url'];
           $this->c('body', $target, $body['body']);
           $this->_parseBody($target, $body['body']);
         }
@@ -200,6 +202,7 @@ class MentionClient {
       // First try a HEAD request and look for Link header
       if(!$this->c('headers', $target)) {
         $head = static::_head($target);
+        $target = $head['url'];
         $this->c('headers', $target, $head['headers']);
       }
 
@@ -223,6 +226,7 @@ class MentionClient {
         self::_debug("discoverWebmentionEndpoint: No webmention server found in header, looking in body now");
         if(!$this->c('body', $target)) {
           $body = static::_get($target);
+          $target = $body['url'];
           $this->c('body', $target, $body['body']);
           $this->_parseBody($target, $body['body']);
         }
@@ -452,6 +456,7 @@ class MentionClient {
     return array(
       'code' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
       'headers' => self::_parse_headers(trim($response)),
+      'url' => curl_getinfo($ch, CURLINFO_EFFECTIVE_URL)
     );
   }
 
@@ -472,7 +477,8 @@ class MentionClient {
     return array(
       'code' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
       'headers' => self::_parse_headers(trim(substr($response, 0, $header_size))),
-      'body' => substr($response, $header_size)
+      'body' => substr($response, $header_size),
+      'url' => curl_getinfo($ch, CURLINFO_EFFECTIVE_URL)
     );
   }
 
