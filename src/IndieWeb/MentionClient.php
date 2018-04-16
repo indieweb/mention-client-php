@@ -276,7 +276,7 @@ class MentionClient {
 
     return static::_post($endpoint, $payload, array(
       'Content-type: application/x-www-form-urlencoded',
-      'Accept: application/json'
+      'Accept: application/json, */*;q=0.8'
     ));
   }
 
