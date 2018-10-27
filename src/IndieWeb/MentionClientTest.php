@@ -21,7 +21,7 @@ class MentionClientTest extends MentionClient {
     return $method->invokeArgs(null, $args);
   }
 
-  protected static function _head($url) {
+  protected static function _head($url, $headers=array()) {
     self::$_redirects_remaining = 5;
     $response = self::_read_file($url);
     return array(
@@ -31,7 +31,7 @@ class MentionClientTest extends MentionClient {
     );
   }
 
-  protected static function _get($url) {
+  protected static function _get($url, $headers=array()) {
     self::$_redirects_remaining = 5;
     return self::_read_file($url);
   }

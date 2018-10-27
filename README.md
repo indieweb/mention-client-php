@@ -181,6 +181,16 @@ are found, it will return an empty array.
 ]
 ```
 
+### Custom User Agent
+
+You can set the user agent that this library uses when making HTTP requests.
+
+```php
+IndieWeb\MentionClient::setUserAgent('Custom user agent string');
+```
+
+At that point, any HTTP request (GET, HEAD, POST) that this library makes will include the user agent header you've set.
+
 
 ### Debugging
 

@@ -24,6 +24,7 @@ class MentionClient {
   private $_webmentionServer = array();
 
   private static $_proxy = false;
+  private static $_userAgent = false;
 
   public $usemf2 = true; // for testing, can set this to false to avoid using the Mf2 parser
 
@@ -33,6 +34,14 @@ class MentionClient {
    */
   public function setProxy($proxy_string) {
     self::$_proxy = $proxy_string;
+  }
+
+  /**
+   * @param string $user_agent
+   * @codeCoverageIgnore
+   */
+  public static function setUserAgent($user_agent) {
+    self::$_userAgent = $user_agent;
   }
 
   /**
@@ -445,9 +454,13 @@ class MentionClient {
    * @return array
    * @codeCoverageIgnore
    */
-  protected static function _head($url) {
+  protected static function _head($url, $headers=array()) {
+    if(self::$_userAgent)
+      $headers[] = 'User-Agent: '.self::$_userAgent;
+
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     curl_setopt($ch, CURLOPT_HEADER, true);
     curl_setopt($ch, CURLOPT_NOBODY, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
@@ -466,9 +479,13 @@ class MentionClient {
    * @return array with keys 'code' 'headers' and 'body'
    * @codeCoverageIgnore
    */
-  protected static function _get($url) {
+  protected static function _get($url, $headers=array()) {
+    if(self::$_userAgent)
+      $headers[] = 'User-Agent: '.self::$_userAgent;
+
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     curl_setopt($ch, CURLOPT_HEADER, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     if (self::$_proxy) curl_setopt($ch, CURLOPT_PROXY, self::$_proxy);
@@ -490,6 +507,9 @@ class MentionClient {
    * @codeCoverageIgnore
    */
   protected static function _post($url, $body, $headers=array()) {
+    if(self::$_userAgent)
+      $headers[] = 'User-Agent: '.self::$_userAgent;
+
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
