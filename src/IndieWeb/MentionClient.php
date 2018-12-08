@@ -488,6 +488,7 @@ class MentionClient {
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     curl_setopt($ch, CURLOPT_HEADER, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_ENCODING, '');
     if (self::$_proxy) curl_setopt($ch, CURLOPT_PROXY, self::$_proxy);
     $response = curl_exec($ch);
     $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
