@@ -25,6 +25,7 @@ class MentionClient {
 
   private static $_proxy = false;
   private static $_userAgent = false;
+  private static $_maxFilesize = 1048576; // 1 MB
 
   public $usemf2 = true; // for testing, can set this to false to avoid using the Mf2 parser
 
@@ -42,6 +43,16 @@ class MentionClient {
    */
   public static function setUserAgent($user_agent) {
     self::$_userAgent = $user_agent;
+  }
+
+  /**
+   * @param int $max_filesize
+   * @codeCoverageIgnore
+   */
+  public static function setMaxFilesize($max_filesize) {
+    if(is_int($max_filesize) && $max_filesize >= 0) {
+      self::$_maxFilesize = $max_filesize;
+    }
   }
 
   /**
@@ -464,6 +475,7 @@ class MentionClient {
     curl_setopt($ch, CURLOPT_HEADER, true);
     curl_setopt($ch, CURLOPT_NOBODY, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_MAXFILESIZE, self::$_maxFilesize);
     if (self::$_proxy) curl_setopt($ch, CURLOPT_PROXY, self::$_proxy);
     $response = curl_exec($ch);
     return array(
@@ -488,6 +500,7 @@ class MentionClient {
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     curl_setopt($ch, CURLOPT_HEADER, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_MAXFILESIZE, self::$_maxFilesize);
     if (self::$_proxy) curl_setopt($ch, CURLOPT_PROXY, self::$_proxy);
     $response = curl_exec($ch);
     $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
@@ -516,6 +529,7 @@ class MentionClient {
     curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     curl_setopt($ch, CURLOPT_HEADER, true);
+    curl_setopt($ch, CURLOPT_MAXFILESIZE, self::$_maxFilesize);
     if (self::$_proxy) curl_setopt($ch, CURLOPT_PROXY, self::$_proxy);
     $response = curl_exec($ch);
     self::_debug($response);
